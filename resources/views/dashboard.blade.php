@@ -1,127 +1,170 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Dashboard
-        </h2>
-    </x-slot>
+<div class="page" x-data="calendar()" x-init="init()">
+    <div class="page-header">
+        <h2>Dashboard</h2>
+        <p>Welcome back, {{ Auth::user()->name }}</p>
+    </div>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            <!-- Stats Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-sm font-medium text-gray-500">Pending Requests</div>
-                    <div class="mt-1 text-3xl font-bold text-yellow-600">{{ $stats['pending'] }}</div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-sm font-medium text-gray-500">Approved This Year</div>
-                    <div class="mt-1 text-3xl font-bold text-green-600">{{ $stats['approved_this_year'] }}</div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-sm font-medium text-gray-500">Days Taken This Year</div>
-                    <div class="mt-1 text-3xl font-bold text-indigo-600">{{ $stats['total_days_taken'] }}</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                <!-- Leave Balances -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="text-lg font-medium text-gray-900">Leave Balances ({{ now()->year }})</h3>
-                        <a href="{{ route('leave-requests.create') }}" class="text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                            Request Leave
-                        </a>
-                    </div>
-                    <div class="p-6">
-                        @forelse($balances as $balance)
-                            <div class="mb-4">
-                                <div class="flex justify-between items-center mb-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-3 h-3 rounded-full inline-block" style="background-color: {{ $balance->leaveType->color }}"></span>
-                                        <span class="text-sm font-medium text-gray-700">{{ $balance->leaveType->name }}</span>
-                                    </div>
-                                    <span class="text-sm text-gray-500">
-                                        {{ $balance->remaining_days }} / {{ $balance->allocated_days }} days left
-                                    </span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    @php
-                                        $pct = $balance->allocated_days > 0
-                                            ? min(100, (($balance->used_days + $balance->pending_days) / $balance->allocated_days) * 100)
-                                            : 0;
-                                    @endphp
-                                    <div class="h-2 rounded-full" style="width: {{ $pct }}%; background-color: {{ $balance->leaveType->color }}"></div>
-                                </div>
-                                @if($balance->pending_days > 0)
-                                    <p class="text-xs text-yellow-600 mt-1">{{ $balance->pending_days }} days pending approval</p>
-                                @endif
-                            </div>
-                        @empty
-                            <p class="text-gray-500 text-sm">No leave balances allocated yet.</p>
-                        @endforelse
-                    </div>
-                </div>
-
-                <!-- Recent Requests -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="text-lg font-medium text-gray-900">Recent Requests</h3>
-                        <a href="{{ route('leave-requests.index') }}" class="text-sm text-indigo-600 hover:underline">View All</a>
-                    </div>
-                    <div class="divide-y divide-gray-100">
-                        @forelse($recentRequests as $request)
-                            <a href="{{ route('leave-requests.show', $request) }}" class="block px-6 py-4 hover:bg-gray-50">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $request->leaveType->name }}</p>
-                                        <p class="text-xs text-gray-500">
-                                            {{ $request->start_date->format('M d') }} &ndash; {{ $request->end_date->format('M d, Y') }}
-                                            &bull; {{ $request->total_days }} day(s)
-                                        </p>
-                                    </div>
-                                    <span class="text-xs px-2 py-1 rounded-full font-medium
-                                        @if($request->status === 'approved') bg-green-100 text-green-700
-                                        @elseif($request->status === 'rejected') bg-red-100 text-red-700
-                                        @elseif($request->status === 'cancelled') bg-gray-100 text-gray-700
-                                        @else bg-yellow-100 text-yellow-700 @endif">
-                                        {{ ucfirst($request->status) }}
-                                    </span>
-                                </div>
-                            </a>
-                        @empty
-                            <p class="px-6 py-4 text-gray-500 text-sm">No leave requests yet.</p>
-                        @endforelse
-                    </div>
-                </div>
-
-                <!-- Pending Approvals (Manager/Admin) -->
-                @if(Auth::user()->isManager() && $pendingApprovals && $pendingApprovals->isNotEmpty())
-                    <div class="bg-white rounded-lg shadow lg:col-span-2">
-                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                            <h3 class="text-lg font-medium text-gray-900">Pending Approvals</h3>
-                            <a href="{{ route('approvals.index') }}" class="text-sm text-indigo-600 hover:underline">View All</a>
-                        </div>
-                        <div class="divide-y divide-gray-100">
-                            @foreach($pendingApprovals as $req)
-                                <div class="px-6 py-4 flex justify-between items-center">
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $req->user->name }}</p>
-                                        <p class="text-xs text-gray-500">
-                                            {{ $req->leaveType->name }} &bull;
-                                            {{ $req->start_date->format('M d') }} &ndash; {{ $req->end_date->format('M d, Y') }}
-                                            &bull; {{ $req->total_days }} day(s)
-                                        </p>
-                                    </div>
-                                    <a href="{{ route('approvals.index') }}" class="text-sm text-indigo-600 hover:underline">Review</a>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
-            </div>
+    {{-- Stats --}}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Days Remaining</div>
+            <div class="stat-val" style="color:{{ $daysRemaining < 5 ? '#ef4444' : '#059669' }}">{{ $daysRemaining }}</div>
+            <div class="stat-sub">of {{ Auth::user()->days_allowed }} allowed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Days Used</div>
+            <div class="stat-val">{{ $usedDays }}</div>
+            <div class="stat-sub">approved leave</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Days Allowed</div>
+            <div class="stat-val">{{ Auth::user()->days_allowed }}</div>
+            <div class="stat-sub">annual entitlement</div>
+        </div>
+        <div class="stat-card">
+            @if(Auth::user()->is_manager)
+                <div class="stat-label">Pending Approval</div>
+                <div class="stat-val" style="color:{{ $pendingApprovalCount > 0 ? '#d97706' : '#1a1a1a' }}">{{ $pendingApprovalCount }}</div>
+                <div class="stat-sub">requests awaiting</div>
+            @else
+                <div class="stat-label">Requests This Year</div>
+                <div class="stat-val">{{ $leaves->count() }}</div>
+                <div class="stat-sub">total submitted</div>
+            @endif
         </div>
     </div>
+
+    <div class="two-col">
+        {{-- Calendar --}}
+        <div class="card">
+            <div class="cal-nav">
+                <span style="font-size:14px;font-weight:600;" x-text="monthName + ' ' + year"></span>
+                <div style="display:flex;gap:6px;">
+                    <button class="cal-nav-btn" @click="prevMonth()">&#8249;</button>
+                    <button class="cal-nav-btn" @click="nextMonth()">&#8250;</button>
+                </div>
+            </div>
+
+            <div class="calendar-grid">
+                <template x-for="d in ['Su','Mo','Tu','We','Th','Fr','Sa']">
+                    <div class="cal-header" x-text="d"></div>
+                </template>
+                <template x-for="(day, idx) in calDays" :key="idx">
+                    <div class="cal-day"
+                         :class="{
+                             'cal-empty': !day,
+                             'weekend': day && (idx % 7 === 0 || idx % 7 === 6),
+                             'cal-past': day && isPast(day),
+                             'today': day && isToday(day),
+                             'bank-holiday': day && isBankHoliday(day),
+                             'has-leave': day && hasApprovedLeave(day),
+                             'pending-leave': day && hasPendingLeave(day),
+                         }"
+                         x-text="day || ''">
+                    </div>
+                </template>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1px solid #86efac;"></div> Approved</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:1px solid #fde047;"></div> Pending</div>
+                <div class="legend-item"><div class="legend-dot" style="border:2px solid #c4b5fd;"></div> Bank holiday</div>
+            </div>
+        </div>
+
+        <div>
+            {{-- Upcoming leave --}}
+            <div class="card">
+                <div class="card-title">My upcoming leave</div>
+                @forelse($upcomingLeaves as $leave)
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede8;">
+                        <div>
+                            <div style="font-size:13px;font-weight:500;">
+                                {{ $leave->start_date->format('d M') }} &ndash; {{ $leave->end_date->format('d M Y') }}
+                            </div>
+                            <div style="font-size:12px;color:#888;">{{ $leave->days }} day(s) &bull; {{ $leave->reason }}</div>
+                        </div>
+                        <span class="badge badge-{{ $leave->status }}">{{ $leave->status }}</span>
+                    </div>
+                @empty
+                    <div class="empty-state" style="padding:20px 0;">No upcoming leave.</div>
+                @endforelse
+            </div>
+
+            @if(Auth::user()->is_manager && $offToday && $offToday->isNotEmpty())
+                <div class="card">
+                    <div class="card-title">Off today ({{ $offToday->count() }})</div>
+                    @foreach($offToday as $emp)
+                        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+                            <div class="avatar" style="width:28px;height:28px;font-size:11px;background:{{ $emp->color }}33;color:{{ $emp->color }}">
+                                {{ $emp->initials() }}
+                            </div>
+                            <div>
+                                <div style="font-size:13px;font-weight:500;">{{ $emp->name }}</div>
+                                <div style="font-size:11px;color:#888;">{{ $emp->role }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<script>
+function calendar() {
+    const leaves = @json($leaves->map(fn($l) => ['start' => $l->start_date->toDateString(), 'end' => $l->end_date->toDateString(), 'status' => $l->status]));
+    const bankHolidays = @json($bankHolidayDates);
+    const today = new Date();
+
+    return {
+        year: today.getFullYear(),
+        month: today.getMonth(),
+        calDays: [],
+        get monthName() {
+            return new Date(this.year, this.month, 1).toLocaleString('en-GB', { month: 'long' });
+        },
+        init() { this.buildCalendar(); },
+        buildCalendar() {
+            const first = new Date(this.year, this.month, 1).getDay();
+            const daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
+            const days = [];
+            for (let i = 0; i < first; i++) days.push(null);
+            for (let d = 1; d <= daysInMonth; d++) days.push(d);
+            this.calDays = days;
+        },
+        prevMonth() {
+            if (this.month === 0) { this.month = 11; this.year--; }
+            else this.month--;
+            this.buildCalendar();
+        },
+        nextMonth() {
+            if (this.month === 11) { this.month = 0; this.year++; }
+            else this.month++;
+            this.buildCalendar();
+        },
+        dateStr(d) {
+            return `${this.year}-${String(this.month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        },
+        isPast(d) {
+            const t = new Date(); t.setHours(0,0,0,0);
+            return new Date(this.dateStr(d)) < t;
+        },
+        isToday(d) {
+            const t = new Date(); t.setHours(0,0,0,0);
+            return new Date(this.dateStr(d)).getTime() === t.getTime();
+        },
+        isBankHoliday(d) { return bankHolidays.includes(this.dateStr(d)); },
+        hasApprovedLeave(d) {
+            const ds = this.dateStr(d);
+            return leaves.some(l => l.status === 'approved' && l.start <= ds && l.end >= ds);
+        },
+        hasPendingLeave(d) {
+            const ds = this.dateStr(d);
+            return leaves.some(l => l.status === 'pending' && l.start <= ds && l.end >= ds);
+        },
+    };
+}
+</script>
 </x-app-layout>

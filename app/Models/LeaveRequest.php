@@ -7,57 +7,29 @@ use Illuminate\Database\Eloquent\Model;
 class LeaveRequest extends Model
 {
     protected $fillable = [
-        'user_id',
-        'leave_type_id',
+        'employee_id',
         'start_date',
         'end_date',
-        'total_days',
+        'days',
         'reason',
         'status',
-        'reviewed_by',
-        'reviewer_comment',
-        'reviewed_at',
+        'approved_by_id',
+        'approved_at',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'reviewed_at' => 'datetime',
-        'total_days' => 'decimal:1',
+        'approved_at' => 'datetime',
     ];
 
-    public function user()
+    public function employee()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'employee_id');
     }
 
-    public function leaveType()
+    public function approvedBy()
     {
-        return $this->belongsTo(LeaveType::class);
-    }
-
-    public function reviewer()
-    {
-        return $this->belongsTo(User::class, 'reviewed_by');
-    }
-
-    public function isPending(): bool
-    {
-        return $this->status === 'pending';
-    }
-
-    public function isApproved(): bool
-    {
-        return $this->status === 'approved';
-    }
-
-    public function statusBadgeClass(): string
-    {
-        return match($this->status) {
-            'approved' => 'badge-success',
-            'rejected' => 'badge-danger',
-            'cancelled' => 'badge-secondary',
-            default => 'badge-warning',
-        };
+        return $this->belongsTo(User::class, 'approved_by_id');
     }
 }

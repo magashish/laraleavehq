@@ -10,10 +10,9 @@ class ManagerMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isManager()) {
-            abort(403, 'Access denied. Manager or Admin only.');
+        if (!$request->user()?->is_manager) {
+            abort(403, 'Managers only.');
         }
-
         return $next($request);
     }
 }

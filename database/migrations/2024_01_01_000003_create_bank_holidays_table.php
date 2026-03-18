@@ -8,18 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('holidays', function (Blueprint $table) {
+        Schema::create('bank_holidays', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->date('date');
-            $table->text('description')->nullable();
-            $table->boolean('is_recurring')->default(false);
+            $table->date('date')->unique();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('holidays');
+        Schema::dropIfExists('bank_holidays');
     }
 };

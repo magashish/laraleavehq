@@ -15,10 +15,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'department',
-        'position',
-        'hire_date',
-        'manager_id',
+        'is_manager',
+        'days_allowed',
+        'color',
     ];
 
     protected $hidden = [
@@ -26,50 +25,36 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'hire_date' => 'date',
-        ];
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    public function isManager(): bool
-    {
-        return in_array($this->role, ['admin', 'manager']);
-    }
-
-    public function manager()
-    {
-        return $this->belongsTo(User::class, 'manager_id');
-    }
-
-    public function subordinates()
-    {
-        return $this->hasMany(User::class, 'manager_id');
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_manager' => 'boolean',
+    ];
 
     public function leaveRequests()
     {
-        return $this->hasMany(LeaveRequest::class);
+        return $this->hasMany(LeaveRequest::class, 'employee_id');
     }
 
-    public function leaveBalances()
+    public function approvedLeave()
     {
-        return $this->hasMany(LeaveBalance::class);
+        return $this->hasMany(LeaveRequest::class, 'approved_by_id');
     }
 
-    public function getLeaveBalance(int $leaveTypeId, int $year = null): ?LeaveBalance
+    public function usedDays(): int
     {
-        return $this->leaveBalances()
-            ->where('leave_type_id', $leaveTypeId)
-            ->where('year', $year ?? now()->year)
-            ->first();
+        return (int) $this->leaveRequests()->where('status', 'approved')->sum('days');
+    }
+
+    public function remainingDays(): int
+    {
+        return $this->days_allowed - $this->usedDays();
+    }
+
+    public function initials(): string
+    {
+        return collect(explode(' ', $this->name))
+            ->map(fn($part) => strtoupper($part[0]))
+            ->implode('');
     }
 }
