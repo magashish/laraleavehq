@@ -26,7 +26,22 @@ class LeaveController extends Controller
             ? User::with(['leaveRequests' => fn($q) => $q->where('status', 'approved')])->orderBy('name')->get()
             : collect();
 
-        return view('leave.index', compact('user', 'leaves', 'bankHolidays', 'allEmployees'));
+        $leavesData = $leaves->map(fn($l) => [
+            'id'         => $l->id,
+            'start_date' => $l->start_date->toDateString(),
+            'end_date'   => $l->end_date->toDateString(),
+            'days'       => $l->days,
+            'reason'     => $l->reason,
+            'status'     => $l->status,
+            'employee'   => [
+                'id'    => $l->employee->id,
+                'name'  => $l->employee->name,
+                'role'  => $l->employee->role,
+                'color' => $l->employee->color,
+            ],
+        ]);
+
+        return view('leave.index', compact('user', 'leaves', 'leavesData', 'bankHolidays', 'allEmployees'));
     }
 
     public function store(Request $request)
