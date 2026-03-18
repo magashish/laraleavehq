@@ -154,20 +154,7 @@
 
 <script>
 function leavePage() {
-    const allLeaves = @json($leaves->map(fn($l) => [
-        'id' => $l->id,
-        'start_date' => $l->start_date->toDateString(),
-        'end_date' => $l->end_date->toDateString(),
-        'days' => $l->days,
-        'reason' => $l->reason,
-        'status' => $l->status,
-        'employee' => [
-            'id' => $l->employee->id,
-            'name' => $l->employee->name,
-            'role' => $l->employee->role,
-            'color' => $l->employee->color,
-        ],
-    ]));
+    const allLeaves = @json($leavesData);
 
     const bankHolidays = @json($bankHolidays->pluck('date')->map(fn($d) => $d->toDateString()));
 
