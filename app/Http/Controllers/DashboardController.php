@@ -27,7 +27,7 @@ class DashboardController extends Controller
 
         $pendingApprovalCount = null;
         $offToday = null;
-        if ($user->is_manager) {
+        if ($user->isManager()) {
             $pendingApprovalCount = LeaveRequest::where('status', 'pending')->count();
             $offToday = LeaveRequest::with('employee')
                 ->where('status', 'approved')

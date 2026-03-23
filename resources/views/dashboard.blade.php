@@ -9,8 +9,13 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Days Remaining</div>
-            <div class="stat-val" style="color:{{ $daysRemaining < 5 ? '#ef4444' : '#059669' }}">{{ $daysRemaining }}</div>
-            <div class="stat-sub">of {{ Auth::user()->days_allowed }} allowed</div>
+            @if(Auth::user()->hasHolidayAllowance())
+                <div class="stat-val" style="color:{{ $daysRemaining < 5 ? '#ef4444' : '#059669' }}">{{ $daysRemaining }}</div>
+                <div class="stat-sub">of {{ Auth::user()->days_allowed }} allowed</div>
+            @else
+                <div class="stat-val" style="color:#aaa;">N/A</div>
+                <div class="stat-sub">{{ Auth::user()->roleBadgeLabel() }}</div>
+            @endif
         </div>
         <div class="stat-card">
             <div class="stat-label">Days Used</div>
@@ -23,7 +28,7 @@
             <div class="stat-sub">annual entitlement</div>
         </div>
         <div class="stat-card">
-            @if(Auth::user()->is_manager)
+            @if(Auth::user()->isManager())
                 <div class="stat-label">Pending Approval</div>
                 <div class="stat-val" style="color:{{ $pendingApprovalCount > 0 ? '#d97706' : '#1a1a1a' }}">{{ $pendingApprovalCount }}</div>
                 <div class="stat-sub">requests awaiting</div>
@@ -92,14 +97,18 @@
                 @endforelse
             </div>
 
-            @if(Auth::user()->is_manager && $offToday && $offToday->isNotEmpty())
+            @if(Auth::user()->isManager() && $offToday && $offToday->isNotEmpty())
                 <div class="card">
                     <div class="card-title">Off today ({{ $offToday->count() }})</div>
                     @foreach($offToday as $emp)
                         <div style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-                            <div class="avatar" style="width:28px;height:28px;font-size:11px;background:{{ $emp->color }}33;color:{{ $emp->color }}">
-                                {{ $emp->initials() }}
-                            </div>
+                            @if($emp->profile_photo)
+                                <img src="{{ $emp->photoUrl() }}" alt="{{ $emp->name }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+                            @else
+                                <div class="avatar" style="width:28px;height:28px;font-size:11px;background:{{ $emp->color }}33;color:{{ $emp->color }}">
+                                    {{ $emp->initials() }}
+                                </div>
+                            @endif
                             <div>
                                 <div style="font-size:13px;font-weight:500;">{{ $emp->name }}</div>
                                 <div style="font-size:11px;color:#888;">{{ $emp->role }}</div>
