@@ -24,15 +24,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings (managers only)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+
+    // Employees
     Route::post('/settings/employees', [SettingsController::class, 'addEmployee'])->name('settings.employees.add');
+    Route::patch('/settings/employees/{user}', [SettingsController::class, 'updateEmployee'])->name('settings.employees.update');
     Route::delete('/settings/employees/{user}', [SettingsController::class, 'removeEmployee'])->name('settings.employees.remove');
     Route::patch('/settings/employees/{user}/days', [SettingsController::class, 'updateDays'])->name('settings.employees.days');
+
+    // Bank holidays
     Route::post('/settings/bank-holidays', [SettingsController::class, 'addBankHoliday'])->name('settings.bank-holidays.add');
     Route::delete('/settings/bank-holidays/{bankHoliday}', [SettingsController::class, 'removeBankHoliday'])->name('settings.bank-holidays.remove');
+
+    // Leave types
+    Route::post('/settings/leave-types', [SettingsController::class, 'addLeaveType'])->name('settings.leave-types.add');
+    Route::patch('/settings/leave-types/{leaveType}', [SettingsController::class, 'updateLeaveType'])->name('settings.leave-types.update');
+    Route::delete('/settings/leave-types/{leaveType}', [SettingsController::class, 'removeLeaveType'])->name('settings.leave-types.remove');
+
+    // Departments
+    Route::post('/settings/departments', [SettingsController::class, 'addDepartment'])->name('settings.departments.add');
+    Route::patch('/settings/departments/{department}', [SettingsController::class, 'updateDepartment'])->name('settings.departments.update');
+    Route::delete('/settings/departments/{department}', [SettingsController::class, 'removeDepartment'])->name('settings.departments.remove');
+    Route::patch('/settings/departments/{department}/members', [SettingsController::class, 'updateDepartmentMembers'])->name('settings.departments.members');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto'])->name('profile.photo');
+    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

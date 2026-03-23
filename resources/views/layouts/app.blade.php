@@ -24,9 +24,9 @@
         </a>
         <a href="{{ route('leave.index') }}" class="nav-item {{ request()->routeIs('leave.*') ? 'active' : '' }}">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-            {{ Auth::user()->is_manager ? 'Manage Leave' : 'My Leave' }}
+            {{ Auth::user()->isManager() ? 'Manage Leave' : 'My Leave' }}
         </a>
-        @if(Auth::user()->is_manager)
+        @if(Auth::user()->isManager())
             <a href="{{ route('team.index') }}" class="nav-item {{ request()->routeIs('team.*') ? 'active' : '' }}">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Team
@@ -39,12 +39,18 @@
 
         <div class="user-info">
             @php $u = Auth::user(); @endphp
-            <div class="avatar" style="width:34px;height:34px;font-size:12px;background:{{ $u->color }}33;color:{{ $u->color }}">
-                {{ $u->initials() }}
-            </div>
+            @if($u->profile_photo)
+                <img src="{{ $u->photoUrl() }}" alt="{{ $u->name }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            @else
+                <div class="avatar" style="width:34px;height:34px;font-size:12px;background:{{ $u->color }}33;color:{{ $u->color }}">
+                    {{ $u->initials() }}
+                </div>
+            @endif
             <div style="flex:1;min-width:0;">
-                <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $u->name }}</div>
-                <div class="role">{{ $u->role }}</div>
+                <a href="{{ route('profile.edit') }}" style="text-decoration:none;">
+                    <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $u->name }}</div>
+                    <div class="role">{{ $u->roleBadgeLabel() }} &bull; {{ $u->role }}</div>
+                </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                     @csrf
                     <button type="submit" class="btn-logout">Sign out</button>
