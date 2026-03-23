@@ -61,7 +61,7 @@
                                 <label style="cursor:pointer;">
                                     <input type="radio" name="_color_pick" value="{{ $c }}" style="display:none;" x-on:change="empColor = '{{ $c }}'">
                                     <div style="width:28px;height:28px;border-radius:50%;background:{{ $c }};cursor:pointer;"
-                                         :style="empColor === '{{ $c }}' ? 'outline:3px solid #1c2b3a;outline-offset:2px;' : ''"
+                                         :style="{ outline: empColor === '{{ $c }}' ? '3px solid #1c2b3a' : '', 'outline-offset': empColor === '{{ $c }}' ? '2px' : '' }"
                                          @click="empColor = '{{ $c }}'"></div>
                                 </label>
                             @endforeach
@@ -128,7 +128,7 @@
                                 <label style="cursor:pointer;">
                                     <input type="radio" name="_edit_color_pick" value="{{ $c }}" style="display:none;" x-on:change="editEmpColor = '{{ $c }}'">
                                     <div style="width:28px;height:28px;border-radius:50%;background:{{ $c }};cursor:pointer;"
-                                         :style="editEmpColor === '{{ $c }}' ? 'outline:3px solid #1c2b3a;outline-offset:2px;' : ''"
+                                         :style="{ outline: editEmpColor === '{{ $c }}' ? '3px solid #1c2b3a' : '', 'outline-offset': editEmpColor === '{{ $c }}' ? '2px' : '' }"
                                          @click="editEmpColor = '{{ $c }}'"></div>
                                 </label>
                             @endforeach
