@@ -204,7 +204,7 @@ class LeaveController extends Controller
         $endDate = Carbon::parse($end);
 
         while ($current->lte($endDate)) {
-            if (!$current->isWeekend()) {
+            if (!$current->isWeekend() && !in_array($current->toDateString(), $bankHolidays)) {
                 $count++;
             }
             $current->addDay();
