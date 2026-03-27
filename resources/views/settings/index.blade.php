@@ -53,19 +53,19 @@
                             <label class="form-label">Annual leave days</label>
                             <input type="number" name="days_allowed" class="form-input" value="25" min="0" max="60" required>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Colour</label>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                                @foreach(['#e879f9','#38bdf8','#fb923c','#a78bfa','#34d399','#f472b6','#facc15','#60a5fa'] as $c)
-                                    <label style="cursor:pointer;">
-                                        <input type="radio" name="_color_pick" value="{{ $c }}" style="display:none;" x-on:change="empColor = '{{ $c }}'">
-                                        <div style="width:24px;height:24px;border-radius:50%;background:{{ $c }};cursor:pointer;"
-                                             :style="empColor === '{{ $c }}' ? 'border:3px solid #1c2b3a;' : 'border:2px solid transparent;'"
-                                             @click="empColor = '{{ $c }}'"></div>
-                                    </label>
-                                @endforeach
-                                <input type="hidden" name="color" :value="empColor">
-                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Colour</label>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px;">
+                            @foreach(['#e879f9','#38bdf8','#fb923c','#a78bfa','#34d399','#f472b6','#facc15','#60a5fa'] as $c)
+                                <label style="cursor:pointer;">
+                                    <input type="radio" name="_color_pick" value="{{ $c }}" style="display:none;" x-on:change="empColor = '{{ $c }}'">
+                                    <div style="width:28px;height:28px;border-radius:50%;background:{{ $c }};cursor:pointer;"
+                                         :style="{ outline: empColor === '{{ $c }}' ? '3px solid #1c2b3a' : '', 'outline-offset': empColor === '{{ $c }}' ? '2px' : '' }"
+                                         @click="empColor = '{{ $c }}'"></div>
+                                </label>
+                            @endforeach
+                            <input type="hidden" name="color" :value="empColor">
                         </div>
                     </div>
                     <div style="background:#f5f4f0;border-radius:7px;padding:8px 12px;font-size:12px;color:#666;margin-bottom:16px;">
@@ -120,19 +120,19 @@
                             <label class="form-label">Annual leave days</label>
                             <input type="number" name="days_allowed" class="form-input" :value="editEmp.days_allowed" min="0" max="60" required>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Colour</label>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                                @foreach(['#e879f9','#38bdf8','#fb923c','#a78bfa','#34d399','#f472b6','#facc15','#60a5fa'] as $c)
-                                    <label style="cursor:pointer;">
-                                        <input type="radio" name="_edit_color_pick" value="{{ $c }}" style="display:none;" x-on:change="editEmpColor = '{{ $c }}'">
-                                        <div style="width:24px;height:24px;border-radius:50%;background:{{ $c }};cursor:pointer;"
-                                             :style="editEmpColor === '{{ $c }}' ? 'border:3px solid #1c2b3a;' : 'border:2px solid transparent;'"
-                                             @click="editEmpColor = '{{ $c }}'"></div>
-                                    </label>
-                                @endforeach
-                                <input type="hidden" name="color" :value="editEmpColor">
-                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Colour</label>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px;">
+                            @foreach(['#e879f9','#38bdf8','#fb923c','#a78bfa','#34d399','#f472b6','#facc15','#60a5fa'] as $c)
+                                <label style="cursor:pointer;">
+                                    <input type="radio" name="_edit_color_pick" value="{{ $c }}" style="display:none;" x-on:change="editEmpColor = '{{ $c }}'">
+                                    <div style="width:28px;height:28px;border-radius:50%;background:{{ $c }};cursor:pointer;"
+                                         :style="{ outline: editEmpColor === '{{ $c }}' ? '3px solid #1c2b3a' : '', 'outline-offset': editEmpColor === '{{ $c }}' ? '2px' : '' }"
+                                         @click="editEmpColor = '{{ $c }}'"></div>
+                                </label>
+                            @endforeach
+                            <input type="hidden" name="color" :value="editEmpColor">
                         </div>
                     </div>
                     <div class="modal-footer">

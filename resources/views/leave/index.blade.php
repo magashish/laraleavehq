@@ -37,16 +37,40 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-check">
+                            <input type="checkbox" name="is_half_day" value="1" x-model="isHalfDay" @change="recalc()">
+                            <strong>Half day</strong>
+                        </label>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Start date</label>
                             <input type="date" name="start_date" class="form-input" x-model="startDate" @change="recalc()" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" x-show="!isHalfDay">
                             <label class="form-label">End date</label>
-                            <input type="date" name="end_date" class="form-input" x-model="endDate" @change="recalc()" required>
+                            <input type="date" name="end_date" class="form-input" x-model="endDate" @change="recalc()" :required="!isHalfDay">
                         </div>
+                        <input type="hidden" name="end_date" x-bind:value="isHalfDay ? startDate : null" x-show="isHalfDay">
                     </div>
+
+                    <template x-if="isHalfDay">
+                        <div class="form-group">
+                            <label class="form-label">Which half?</label>
+                            <div style="display:flex;gap:16px;margin-top:4px;">
+                                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                    <input type="radio" name="half_day_part" value="morning" x-model="halfDayPart" required>
+                                    Morning
+                                </label>
+                                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                    <input type="radio" name="half_day_part" value="afternoon" x-model="halfDayPart">
+                                    Afternoon
+                                </label>
+                            </div>
+                        </div>
+                    </template>
 
                     <template x-if="workingDays > 0">
                         <div class="days-info">
@@ -149,7 +173,7 @@
                                     <span style="font-size:12px;color:#bbb;">—</span>
                                 </template>
                             </td>
-                            <td style="font-size:12px;" x-text="fmt(l.start_date) + ' — ' + fmt(l.end_date)"></td>
+                            <td style="font-size:12px;" x-text="l.is_half_day ? fmt(l.start_date) + ' (' + l.half_day_part + ')' : fmt(l.start_date) + ' — ' + fmt(l.end_date)"></td>
                             <td><strong x-text="l.days"></strong></td>
                             <td style="color:#555;font-size:12px;" x-text="l.reason || '—'"></td>
                             <td><span class="badge" :class="'badge-' + l.status" x-text="l.status"></span></td>
@@ -204,6 +228,8 @@ function leavePage() {
         showModal: {{ $errors->any() ? 'true' : 'false' }},
         startDate: '',
         endDate: '',
+        isHalfDay: false,
+        halfDayPart: 'morning',
         workingDays: 0,
         selectedEmployee: '',
         adminOverride: false,
@@ -233,6 +259,14 @@ function leavePage() {
         },
 
         recalc() {
+            if (this.isHalfDay) {
+                if (!this.startDate) { this.workingDays = 0; return; }
+                const d = new Date(this.startDate);
+                const dow = d.getDay();
+                const ds = d.toISOString().slice(0, 10);
+                this.workingDays = (dow !== 0 && dow !== 6 && !bankHolidays.includes(ds)) ? 0.5 : 0;
+                return;
+            }
             if (!this.startDate || !this.endDate) { this.workingDays = 0; return; }
             let count = 0;
             const d = new Date(this.startDate);

@@ -30,12 +30,14 @@ class LeaveController extends Controller
             : collect();
 
         $leavesData = $leaves->map(fn($l) => [
-            'id'         => $l->id,
-            'start_date' => $l->start_date->toDateString(),
-            'end_date'   => $l->end_date->toDateString(),
-            'days'       => $l->days,
-            'reason'     => $l->reason,
-            'status'     => $l->status,
+            'id'            => $l->id,
+            'start_date'    => $l->start_date->toDateString(),
+            'end_date'      => $l->end_date->toDateString(),
+            'days'          => $l->days,
+            'is_half_day'   => $l->is_half_day,
+            'half_day_part' => $l->half_day_part,
+            'reason'        => $l->reason,
+            'status'        => $l->status,
             'leave_type' => $l->leaveType ? [
                 'id'    => $l->leaveType->id,
                 'name'  => $l->leaveType->name,
@@ -61,9 +63,22 @@ class LeaveController extends Controller
             'leave_type_id' => 'nullable|exists:leave_types,id',
             'start_date'    => 'required|date',
             'end_date'      => 'required|date|after_or_equal:start_date',
+            'is_half_day'   => 'boolean',
+            'half_day_part' => 'nullable|in:morning,afternoon',
             'reason'        => 'nullable|string|max:500',
             'admin_override' => 'boolean',
         ]);
+
+        $isHalfDay = $request->boolean('is_half_day');
+
+        if ($isHalfDay) {
+            if ($validated['start_date'] !== $validated['end_date']) {
+                return back()->withErrors(['start_date' => 'Half-day leave must be a single day (start and end date must match).'])->withInput();
+            }
+            if (empty($validated['half_day_part'])) {
+                return back()->withErrors(['start_date' => 'Please select morning or afternoon for a half-day leave.'])->withInput();
+            }
+        }
 
         // Only managers can book for others
         if (!$user->isManager() && $validated['employee_id'] != $user->id) {
@@ -74,10 +89,17 @@ class LeaveController extends Controller
             ->map(fn($d) => $d->toDateString())
             ->toArray();
 
-        $days = $this->countWorkingDays($validated['start_date'], $validated['end_date'], $bankHolidayDates);
-
-        if ($days <= 0) {
-            return back()->withErrors(['start_date' => 'No working days in the selected range.'])->withInput();
+        if ($isHalfDay) {
+            $fullDays = $this->countWorkingDays($validated['start_date'], $validated['start_date'], $bankHolidayDates);
+            if ($fullDays <= 0) {
+                return back()->withErrors(['start_date' => 'The selected date is not a working day.'])->withInput();
+            }
+            $days = 0.5;
+        } else {
+            $days = $this->countWorkingDays($validated['start_date'], $validated['end_date'], $bankHolidayDates);
+            if ($days <= 0) {
+                return back()->withErrors(['start_date' => 'No working days in the selected range.'])->withInput();
+            }
         }
 
         $employee = User::findOrFail($validated['employee_id']);
@@ -115,8 +137,10 @@ class LeaveController extends Controller
             'employee_id'    => $validated['employee_id'],
             'leave_type_id'  => $validated['leave_type_id'] ?? null,
             'start_date'     => $validated['start_date'],
-            'end_date'       => $validated['end_date'],
+            'end_date'       => $isHalfDay ? $validated['start_date'] : $validated['end_date'],
             'days'           => $days,
+            'is_half_day'    => $isHalfDay,
+            'half_day_part'  => $isHalfDay ? $validated['half_day_part'] : null,
             'reason'         => $validated['reason'] ?? '',
             'status'         => $isManager ? 'approved' : 'pending',
             'approved_by_id' => $isManager ? $user->id : null,
@@ -212,4 +236,5 @@ class LeaveController extends Controller
 
         return $count;
     }
+
 }

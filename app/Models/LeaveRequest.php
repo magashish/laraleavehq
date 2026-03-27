@@ -12,6 +12,8 @@ class LeaveRequest extends Model
         'start_date',
         'end_date',
         'days',
+        'is_half_day',
+        'half_day_part',
         'reason',
         'status',
         'approved_by_id',
@@ -24,6 +26,8 @@ class LeaveRequest extends Model
         'end_date'       => 'date',
         'approved_at'    => 'datetime',
         'admin_override' => 'boolean',
+        'is_half_day'    => 'boolean',
+        'days'           => 'float',
     ];
 
     public function employee()
