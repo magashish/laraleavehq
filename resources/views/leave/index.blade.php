@@ -39,7 +39,7 @@
 
                     <div class="form-group">
                         <label class="form-check">
-                            <input type="checkbox" name="is_half_day" value="1" x-model="isHalfDay" @change="recalc()">
+                            <input type="checkbox" name="is_half_day" value="1" x-model="isHalfDay" @change="onHalfDayChange()">
                             <strong>Half day</strong>
                         </label>
                     </div>
@@ -51,9 +51,8 @@
                         </div>
                         <div class="form-group" x-show="!isHalfDay">
                             <label class="form-label">End date</label>
-                            <input type="date" name="end_date" class="form-input" x-model="endDate" @change="recalc()" :required="!isHalfDay">
+                            <input type="date" name="end_date" class="form-input" x-model="endDate" @change="recalc()" required>
                         </div>
-                        <input type="hidden" name="end_date" x-bind:value="isHalfDay ? startDate : null" x-show="isHalfDay">
                     </div>
 
                     <template x-if="isHalfDay">
@@ -256,6 +255,11 @@ function leavePage() {
 
         fmt(d) {
             return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        },
+
+        onHalfDayChange() {
+            if (this.isHalfDay) this.endDate = this.startDate;
+            this.recalc();
         },
 
         recalc() {
