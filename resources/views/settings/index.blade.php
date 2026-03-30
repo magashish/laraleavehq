@@ -5,11 +5,13 @@
     showEditEmpModal: false,
     showBHModal: false,
     showLTModal: false,
+    showEditLTModal: false,
     showDeptModal: false,
     showEditDeptModal: false,
     empColor: '#38bdf8',
     editEmpColor: '#38bdf8',
     editEmp: {},
+    editLT: {},
     editDept: {},
 }">
 
@@ -194,6 +196,44 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline" @click="showLTModal = false">Cancel</button>
                         <button type="submit" class="btn btn-primary">Add leave type</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    {{-- ── Edit Leave Type Modal ── --}}
+    <template x-if="showEditLTModal">
+        <div class="modal-overlay" @click.self="showEditLTModal = false">
+            <div class="modal">
+                <h3>Edit Leave Type</h3>
+                <form method="POST" :action="'/settings/leave-types/' + editLT.id">
+                    @csrf @method('PATCH')
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-input" :value="editLT.name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Colour</label>
+                            <input type="color" name="color" class="form-input" :value="editLT.color" style="height:42px;padding:4px;" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check">
+                            <input type="checkbox" name="counts_toward_allowance" value="1" :checked="editLT.counts_toward_allowance">
+                            Counts toward annual leave allowance
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check">
+                            <input type="checkbox" name="is_active" value="1" :checked="editLT.is_active">
+                            Active (visible when booking leave)
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" @click="showEditLTModal = false">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
                     </div>
                 </form>
             </div>
@@ -431,13 +471,16 @@
                                 </td>
                                 <td>
                                     <div style="display:flex;gap:6px;">
-                                        <form method="POST" action="{{ route('settings.leave-types.update', $lt) }}" style="display:inline-flex;gap:6px;align-items:center;">
-                                            @csrf @method('PATCH')
-                                            <input type="color" name="color" value="{{ $lt->color }}" style="width:32px;height:28px;padding:2px;border:1px solid #d5d2cc;border-radius:4px;">
-                                            <input type="hidden" name="name" value="{{ $lt->name }}">
-                                            <input type="hidden" name="counts_toward_allowance" value="{{ $lt->counts_toward_allowance ? '1' : '0' }}">
-                                            <button type="submit" class="btn btn-success btn-sm">Save</button>
-                                        </form>
+                                        <button class="btn btn-outline btn-sm"
+                                            @click="editLT = {
+                                                id: {{ $lt->id }},
+                                                name: '{{ addslashes($lt->name) }}',
+                                                color: '{{ $lt->color }}',
+                                                counts_toward_allowance: {{ $lt->counts_toward_allowance ? 'true' : 'false' }},
+                                                is_active: {{ $lt->is_active ? 'true' : 'false' }}
+                                            }; showEditLTModal = true">
+                                            Edit
+                                        </button>
                                         <form method="POST" action="{{ route('settings.leave-types.remove', $lt) }}"
                                             onsubmit="return confirm('Remove leave type {{ $lt->name }}?')">
                                             @csrf @method('DELETE')
