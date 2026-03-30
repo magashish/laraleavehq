@@ -29,7 +29,13 @@ class LeaveController extends Controller
         $leaveTypes   = LeaveType::where('is_active', true)->orderBy('name')->get();
 
         $allEmployees = $user->isManager()
-            ? User::with(['leaveRequests' => fn($q) => $q->where('status', 'approved')])->orderBy('name')->get()
+            ? User::with(['leaveRequests' => fn($q) => $q
+                ->where('status', 'approved')
+                ->where(function ($sq) {
+                    $sq->whereNull('leave_type_id')
+                       ->orWhereHas('leaveType', fn($ltq) => $ltq->where('counts_toward_allowance', true));
+                })
+            ])->orderBy('name')->get()
             : collect();
 
         $leavesData = $leaves->map(fn($l) => [

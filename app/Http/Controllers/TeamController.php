@@ -15,7 +15,13 @@ class TeamController extends Controller
         }
 
         $employees = User::withCount([
-            'leaveRequests as used_days' => fn($q) => $q->where('status', 'approved')->select(\DB::raw('sum(days)')),
+            'leaveRequests as used_days' => fn($q) => $q
+                ->where('status', 'approved')
+                ->where(function ($sq) {
+                    $sq->whereNull('leave_type_id')
+                       ->orWhereHas('leaveType', fn($ltq) => $ltq->where('counts_toward_allowance', true));
+                })
+                ->select(\DB::raw('sum(days)')),
             'leaveRequests as pending_count' => fn($q) => $q->where('status', 'pending'),
         ])->get();
 
