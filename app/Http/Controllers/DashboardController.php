@@ -16,8 +16,8 @@ class DashboardController extends Controller
         $bankHolidays = BankHoliday::orderBy('date')->get();
         $bankHolidayDates = $bankHolidays->pluck('date')->map(fn($d) => $d->toDateString())->toArray();
 
-        $usedDays = $leaves->where('status', 'approved')->sum('days');
-        $daysRemaining = $user->days_allowed - $usedDays;
+        $usedDays = $user->usedDays();
+        $daysRemaining = $user->remainingDays();
 
         $upcomingLeaves = $leaves
             ->where('start_date', '>=', now()->startOfDay())

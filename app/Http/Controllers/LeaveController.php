@@ -116,7 +116,7 @@ class LeaveController extends Controller
             $countsTowardAllowance = !$leaveType || $leaveType->counts_toward_allowance;
 
             if ($countsTowardAllowance) {
-                $usedDays = $employee->leaveRequests()->where('status', 'approved')->sum('days');
+                $usedDays = $employee->usedDays();
                 if ($usedDays + $days > $employee->days_allowed) {
                     $remaining = $employee->days_allowed - $usedDays;
                     return back()->withErrors(['start_date' => "Only {$remaining} days remaining."])->withInput();
