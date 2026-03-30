@@ -201,8 +201,8 @@ class SettingsController extends Controller
         $leaveType->update([
             'name'                    => $validated['name'],
             'color'                   => $validated['color'],
-            'counts_toward_allowance' => $request->boolean('counts_toward_allowance', true),
-            'is_active'               => $request->boolean('is_active', true),
+            'counts_toward_allowance' => $request->boolean('counts_toward_allowance'),
+            'is_active'               => $request->boolean('is_active'),
         ]);
 
         return back()->with('success', 'Leave type updated.');
