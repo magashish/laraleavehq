@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LeaveRequest;
 use App\Models\User;
 use Illuminate\Http\Response;
 
@@ -63,6 +64,68 @@ class CalendarController extends Controller
         return response($ical, 200, [
             'Content-Type'        => 'text/calendar; charset=utf-8',
             'Content-Disposition' => 'inline; filename="leavehq.ics"',
+            'Cache-Control'       => 'no-cache, must-revalidate',
+        ]);
+    }
+
+    public function teamFeed(string $token): Response
+    {
+        $user = User::where('calendar_token', $token)->firstOrFail();
+
+        if (!$user->isManager()) {
+            abort(403);
+        }
+
+        $leaves = LeaveRequest::with(['employee', 'leaveType'])
+            ->where('status', 'approved')
+            ->get();
+
+        $lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//LeaveHQ//LeaveHQ//EN',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            'X-WR-CALNAME:Team Leave',
+            'X-WR-CALDESC:Organisation-wide leave calendar',
+            'X-WR-TIMEZONE:UTC',
+            'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
+            'X-PUBLISHED-TTL:PT1H',
+        ];
+
+        foreach ($leaves as $leave) {
+            $typeName = $leave->leaveType?->name ?? 'Leave';
+            $summary  = $this->esc($leave->employee->name) . ' - ' . $typeName;
+
+            if ($leave->is_half_day) {
+                $summary .= ' (Half day - ' . ucfirst($leave->half_day_part) . ')';
+            }
+
+            $dtStart = $leave->start_date->format('Ymd');
+            $dtEnd   = $leave->end_date->addDay()->format('Ymd');
+
+            $lines[] = 'BEGIN:VEVENT';
+            $lines[] = 'UID:leavehq-team-leave-' . $leave->id . '@leavehq';
+            $lines[] = 'DTSTAMP:' . now()->format('Ymd\THis\Z');
+            $lines[] = 'DTSTART;VALUE=DATE:' . $dtStart;
+            $lines[] = 'DTEND;VALUE=DATE:' . $dtEnd;
+            $lines[] = 'SUMMARY:' . $summary;
+            $lines[] = 'STATUS:CONFIRMED';
+
+            if ($leave->reason) {
+                $lines[] = 'DESCRIPTION:' . $this->esc($leave->reason);
+            }
+
+            $lines[] = 'END:VEVENT';
+        }
+
+        $lines[] = 'END:VCALENDAR';
+
+        $ical = implode("\r\n", $lines) . "\r\n";
+
+        return response($ical, 200, [
+            'Content-Type'        => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'inline; filename="leavehq-team.ics"',
             'Cache-Control'       => 'no-cache, must-revalidate',
         ]);
     }

@@ -127,8 +127,33 @@
             </a>
         </div>
 
+        @if(Auth::user()->isManager())
+            @php $teamCalUrl = route('calendar.team-feed', ['token' => Auth::user()->calendarToken()]); @endphp
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb;" x-data="{ copiedTeam: false }">
+                <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:6px;">Team / Organisation feed</div>
+                <p style="font-size:12px;color:#666;margin-bottom:10px;">Shows approved leave for all employees. Only accessible with a manager or admin token.</p>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <input type="text" value="{{ $teamCalUrl }}" readonly
+                        style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #d5d2cc;border-radius:6px;font-size:12px;color:#555;background:#f9fafb;font-family:monospace;">
+                    <button class="btn btn-outline btn-sm"
+                        x-on:click="navigator.clipboard.writeText('{{ $teamCalUrl }}'); copiedTeam = true; setTimeout(() => copiedTeam = false, 2000)">
+                        <span x-show="!copiedTeam">Copy URL</span>
+                        <span x-show="copiedTeam" style="color:#059669;">Copied!</span>
+                    </button>
+                </div>
+                <div style="margin-top:10px;">
+                    <a href="https://calendar.google.com/calendar/r?cid={{ urlencode($teamCalUrl) }}"
+                        target="_blank" rel="noopener"
+                        style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#2563eb;text-decoration:none;padding:8px 14px;border:1px solid #d5d2cc;border-radius:6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Add to Google Calendar
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <p style="font-size:11px;color:#aaa;margin-top:12px;">
-            Keep this URL private — anyone with it can view your leave calendar.
+            Keep these URLs private — anyone with them can view the leave calendar.
         </p>
     </div>
 

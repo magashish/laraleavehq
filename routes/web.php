@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect()->route('dashboard'));
 
-// Public iCal feed — token is the authentication
+// Public iCal feeds — token is the authentication
 Route::get('/calendar/{token}.ics', [CalendarController::class, 'feed'])->name('calendar.feed');
+Route::get('/calendar/{token}/team.ics', [CalendarController::class, 'teamFeed'])->name('calendar.team-feed');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
