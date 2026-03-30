@@ -40,6 +40,51 @@
         </div>
     </div>
 
+    {{-- ── Daily check-in (hide on weekends) ── --}}
+    @php $isWeekend = now()->isWeekend(); @endphp
+    @if(!$isWeekend)
+    <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+                <div class="card-title" style="margin-bottom:2px;">How are you working today?</div>
+                <div style="font-size:12px;color:#888;">{{ now()->format('l, j F Y') }}</div>
+            </div>
+            @if($todayCheckin)
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span style="font-size:13px;color:#555;">
+                        You're marked as
+                        <strong style="color:{{ $todayCheckin->status === 'office' ? '#1558a0' : '#0d6648' }}">
+                            {{ $todayCheckin->status === 'office' ? 'In office' : 'Remote' }}
+                        </strong>
+                        today
+                        <span style="color:#aaa;font-size:12px;">(checked in {{ $todayCheckin->checked_in_at?->format('H:i') }})</span>
+                    </span>
+                    <form method="POST" action="{{ route('checkin.store') }}" style="display:inline;">
+                        @csrf
+                        <input type="hidden" name="status" value="{{ $todayCheckin->status === 'office' ? 'remote' : 'office' }}">
+                        <button type="submit" class="btn btn-outline btn-sm">
+                            Switch to {{ $todayCheckin->status === 'office' ? 'Remote' : 'In office' }}
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <form method="POST" action="{{ route('checkin.store') }}" style="display:inline;">
+                        @csrf
+                        <input type="hidden" name="status" value="office">
+                        <button type="submit" class="btn btn-primary btn-sm">🏢 In office</button>
+                    </form>
+                    <form method="POST" action="{{ route('checkin.store') }}" style="display:inline;">
+                        @csrf
+                        <input type="hidden" name="status" value="remote">
+                        <button type="submit" class="btn btn-outline btn-sm">🏠 Working remotely</button>
+                    </form>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
     <div class="two-col">
         {{-- Calendar --}}
         <div class="card">

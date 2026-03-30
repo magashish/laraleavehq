@@ -16,8 +16,9 @@ class DashboardController extends Controller
         $bankHolidays = BankHoliday::orderBy('date')->get();
         $bankHolidayDates = $bankHolidays->pluck('date')->map(fn($d) => $d->toDateString())->toArray();
 
-        $usedDays = $user->usedDays();
+        $usedDays      = $user->usedDays();
         $daysRemaining = $user->remainingDays();
+        $todayCheckin  = $user->checkins()->where('date', now()->toDateString())->first();
 
         $upcomingLeaves = $leaves
             ->where('start_date', '>=', now()->startOfDay())
@@ -41,7 +42,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'user', 'leaves', 'bankHolidayDates', 'usedDays', 'daysRemaining',
-            'upcomingLeaves', 'pendingApprovalCount', 'offToday'
+            'upcomingLeaves', 'pendingApprovalCount', 'offToday', 'todayCheckin'
         ));
     }
 }

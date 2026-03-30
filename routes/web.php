@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProfileController;
@@ -12,6 +13,9 @@ Route::get('/', fn() => redirect()->route('dashboard'));
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Daily check-in
+    Route::post('/checkin', [CheckinController::class, 'store'])->name('checkin.store');
 
     // Leave management
     Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
