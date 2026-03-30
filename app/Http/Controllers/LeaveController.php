@@ -7,9 +7,12 @@ use App\Models\Department;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\User;
+use App\Mail\LeaveRequested;
+use App\Mail\LeaveStatusUpdated;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
 {
@@ -133,7 +136,7 @@ class LeaveController extends Controller
 
         $isManager = $user->isManager();
 
-        LeaveRequest::create([
+        $leave = LeaveRequest::create([
             'employee_id'    => $validated['employee_id'],
             'leave_type_id'  => $validated['leave_type_id'] ?? null,
             'start_date'     => $validated['start_date'],
@@ -147,6 +150,19 @@ class LeaveController extends Controller
             'approved_at'    => $isManager ? now() : null,
             'admin_override' => $adminOverride,
         ]);
+
+        $leave->load(['employee', 'leaveType', 'approvedBy']);
+
+        if ($isManager) {
+            // Manager booked directly — notify the employee
+            Mail::to($leave->employee->email)->send(new LeaveStatusUpdated($leave));
+        } else {
+            // Employee requested — notify all managers & admins
+            $managers = User::whereIn('role_type', [User::ROLE_ADMIN, User::ROLE_MANAGER])->get();
+            foreach ($managers as $manager) {
+                Mail::to($manager->email)->send(new LeaveRequested($leave));
+            }
+        }
 
         return redirect()->route('leave.index')
             ->with('success', 'Leave ' . ($isManager ? 'booked' : 'requested') . ' successfully.');
@@ -184,6 +200,9 @@ class LeaveController extends Controller
             'approved_at'    => now(),
             'admin_override' => $adminOverride,
         ]);
+
+        $leave->load(['employee', 'leaveType', 'approvedBy']);
+        Mail::to($leave->employee->email)->send(new LeaveStatusUpdated($leave));
 
         return back()->with('success', 'Leave ' . $validated['status'] . '.');
     }
