@@ -91,6 +91,47 @@
         </form>
     </div>
 
+    {{-- ── Calendar sync ── --}}
+    <div class="card" style="margin-bottom:20px;" x-data="{ copied: false }">
+        <div class="card-title">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Calendar Sync
+            </div>
+        </div>
+        <p style="font-size:13px;color:#555;margin-bottom:16px;">
+            Subscribe to your approved leave in Google Calendar, Outlook, or Apple Calendar.
+            The calendar updates automatically when leave is approved.
+        </p>
+
+        @php $calUrl = route('calendar.feed', ['token' => Auth::user()->calendarToken()]); @endphp
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <input type="text" value="{{ $calUrl }}" readonly
+                style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #d5d2cc;border-radius:6px;font-size:12px;color:#555;background:#f9fafb;font-family:monospace;">
+            <button class="btn btn-outline btn-sm"
+                x-on:click="navigator.clipboard.writeText('{{ $calUrl }}'); copied = true; setTimeout(() => copied = false, 2000)">
+                <span x-show="!copied">Copy URL</span>
+                <span x-show="copied" style="color:#059669;">Copied!</span>
+            </button>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="https://calendar.google.com/calendar/r?cid={{ urlencode($calUrl) }}"
+                target="_blank" rel="noopener"
+                style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#2563eb;text-decoration:none;padding:8px 14px;border:1px solid #d5d2cc;border-radius:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Add to Google Calendar
+            </a>
+        </div>
+
+        <p style="font-size:11px;color:#aaa;margin-top:12px;">
+            Keep this URL private — anyone with it can view your leave calendar.
+        </p>
+    </div>
+
     {{-- ── Change password ── --}}
     <div class="card" style="margin-bottom:20px;">
         <div class="card-title">Change Password</div>

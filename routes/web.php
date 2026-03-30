@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProfileController;
@@ -8,6 +9,9 @@ use App\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect()->route('dashboard'));
+
+// Public iCal feed — token is the authentication
+Route::get('/calendar/{token}.ics', [CalendarController::class, 'feed'])->name('calendar.feed');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
