@@ -135,7 +135,7 @@
                                     <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                    <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
                                          :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
                                 </template>
                                 <div style="flex:1;min-width:0;">
@@ -169,7 +169,7 @@
                                     <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                    <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
                                          :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
                                 </template>
                                 <div style="width:124px;flex-shrink:0;min-width:0;">
@@ -270,7 +270,7 @@
                                     <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                    <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
                                          :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
                                 </template>
                                 <div style="flex:1;min-width:0;">
@@ -306,7 +306,7 @@
                             <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                         </template>
                         <template x-if="!p.photo_url">
-                            <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                            <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
                                  :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
                         </template>
                         <div style="width:124px;flex-shrink:0;min-width:0;">
