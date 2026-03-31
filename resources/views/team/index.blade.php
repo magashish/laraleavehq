@@ -131,8 +131,13 @@
                     <div>
                         <template x-for="p in filteredPeople" :key="p.id">
                             <div class="prow">
-                                <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
-                                     :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                <template x-if="p.photo_url">
+                                    <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                </template>
+                                <template x-if="!p.photo_url">
+                                    <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                         :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                </template>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
@@ -160,8 +165,13 @@
                         </div>
                         <template x-for="p in teamData" :key="p.id">
                             <div style="display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #f0f0ee;">
-                                <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
-                                     :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                <template x-if="p.photo_url">
+                                    <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                </template>
+                                <template x-if="!p.photo_url">
+                                    <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                         :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                </template>
                                 <div style="width:124px;flex-shrink:0;min-width:0;">
                                     <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
@@ -256,8 +266,13 @@
                         <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:12px;">Per-person breakdown</div>
                         <template x-for="p in customData.teamData" :key="p.id">
                             <div class="prow">
-                                <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
-                                     :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                <template x-if="p.photo_url">
+                                    <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                </template>
+                                <template x-if="!p.photo_url">
+                                    <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                         :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                </template>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:500;color:#1a1a1a;" x-text="p.name"></div>
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
@@ -287,8 +302,13 @@
                 <template x-for="p in teamData" :key="p.id">
                     @php $workingDays = now()->daysInMonth; @endphp
                     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ee;">
-                        <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
-                             :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                        <template x-if="p.photo_url">
+                            <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                        </template>
+                        <template x-if="!p.photo_url">
+                            <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                 :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                        </template>
                         <div style="width:124px;flex-shrink:0;min-width:0;">
                             <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
                             <div style="font-size:11px;color:#888;" x-text="p.role"></div>

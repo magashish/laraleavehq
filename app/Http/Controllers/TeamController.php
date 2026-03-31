@@ -39,15 +39,16 @@ class TeamController extends Controller
             $todayCheckin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $today);
 
             return [
-                'id'       => $emp->id,
-                'name'     => $emp->name,
-                'role'     => $emp->role,
-                'color'    => $emp->color,
-                'initials' => $emp->initials(),
-                'status'   => $this->getUserStatus($emp, $today),
-                'time'     => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
-                'week'     => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
-                'month'    => $this->getMonthStats($emp, $monthStart, $monthEnd),
+                'id'        => $emp->id,
+                'name'      => $emp->name,
+                'role'      => $emp->role,
+                'color'     => $emp->color,
+                'initials'  => $emp->initials(),
+                'photo_url' => $emp->photoUrl(),
+                'status'    => $this->getUserStatus($emp, $today),
+                'time'      => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
+                'week'      => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
+                'month'     => $this->getMonthStats($emp, $monthStart, $monthEnd),
             ];
         })->values();
 
@@ -101,15 +102,16 @@ class TeamController extends Controller
             $remote = $emp->checkins->filter(fn($c) => $c->status === 'remote')->count();
 
             return [
-                'id'       => $emp->id,
-                'name'     => $emp->name,
-                'role'     => $emp->role,
-                'color'    => $emp->color,
-                'initials' => $emp->initials(),
-                'office'   => $office,
-                'remote'   => $remote,
-                'leave'    => $leave,
-                'sick'     => $sick,
+                'id'        => $emp->id,
+                'name'      => $emp->name,
+                'role'      => $emp->role,
+                'color'     => $emp->color,
+                'initials'  => $emp->initials(),
+                'photo_url' => $emp->photoUrl(),
+                'office'    => $office,
+                'remote'    => $remote,
+                'leave'     => $leave,
+                'sick'      => $sick,
             ];
         })->values();
 
