@@ -57,6 +57,72 @@ class TeamController extends Controller
         return view('team.index', compact('teamData', 'notices', 'todayIdx', 'weekLabels'));
     }
 
+    public function custom(Request $request)
+    {
+        if (!Auth::user()->isManager()) abort(403);
+
+        $validated = $request->validate([
+            'from' => 'required|date',
+            'to'   => 'required|date|after_or_equal:from',
+        ]);
+
+        $from = $validated['from'];
+        $to   = $validated['to'];
+
+        $employees = User::with([
+            'leaveRequests' => fn($q) => $q
+                ->with('leaveType')
+                ->where('status', 'approved')
+                ->where('start_date', '<=', $to)
+                ->where('end_date', '>=', $from),
+            'checkins' => fn($q) => $q
+                ->where('date', '>=', $from)
+                ->where('date', '<=', $to),
+        ])->orderBy('name')->get();
+
+        $teamData = $employees->map(function ($emp) use ($from, $to) {
+            $leave = 0;
+            $sick  = 0;
+
+            foreach ($emp->leaveRequests as $l) {
+                $start  = max($l->start_date->toDateString(), $from);
+                $end    = min($l->end_date->toDateString(), $to);
+                $isSick = str_contains(strtolower($l->leaveType?->name ?? ''), 'sick');
+
+                $d = Carbon::parse($start);
+                $e = Carbon::parse($end);
+                while ($d->lte($e)) {
+                    if (!$d->isWeekend()) { $isSick ? $sick++ : $leave++; }
+                    $d->addDay();
+                }
+            }
+
+            $office = $emp->checkins->filter(fn($c) => $c->status === 'office')->count();
+            $remote = $emp->checkins->filter(fn($c) => $c->status === 'remote')->count();
+
+            return [
+                'id'       => $emp->id,
+                'name'     => $emp->name,
+                'role'     => $emp->role,
+                'color'    => $emp->color,
+                'initials' => $emp->initials(),
+                'office'   => $office,
+                'remote'   => $remote,
+                'leave'    => $leave,
+                'sick'     => $sick,
+            ];
+        })->values();
+
+        $totals = [
+            'office' => $teamData->sum('office'),
+            'remote' => $teamData->sum('remote'),
+            'leave'  => $teamData->sum('leave'),
+            'sick'   => $teamData->sum('sick'),
+        ];
+
+        return response()->json(compact('teamData', 'totals'));
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function getUserStatus(User $emp, string $date): string

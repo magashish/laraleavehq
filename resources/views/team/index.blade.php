@@ -37,10 +37,19 @@
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button class="tp" :class="view==='today'?'active':''" @click="setView('today')">Today</button>
-                <button class="tp" :class="view==='week'?'active':''"  @click="setView('week')">This week</button>
-                <button class="tp" :class="view==='month'?'active':''" @click="setView('month')">This month</button>
+                <button class="tp" :class="view==='today'?'active':''"  @click="setView('today')">Today</button>
+                <button class="tp" :class="view==='week'?'active':''"   @click="setView('week')">This week</button>
+                <button class="tp" :class="view==='month'?'active':''"  @click="setView('month')">This month</button>
+                <button class="tp" :class="view==='custom'?'active':''" @click="setView('custom')">Custom</button>
             </div>
+            <template x-if="view==='custom'">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    <input type="date" x-model="customFrom" style="font-size:12px;padding:4px 8px;border-radius:8px;border:1px solid #e0e0e0;background:#f5f5f3;color:#1a1a1a;font-family:inherit;">
+                    <span style="font-size:11px;color:#aaa;">to</span>
+                    <input type="date" x-model="customTo" style="font-size:12px;padding:4px 8px;border-radius:8px;border:1px solid #e0e0e0;background:#f5f5f3;color:#1a1a1a;font-family:inherit;">
+                    <button @click="applyCustom()" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:inherit;">Apply</button>
+                </div>
+            </template>
             <span style="font-size:11px;color:#999;background:#f5f5f3;border:1px solid #e0e0e0;border-radius:8px;padding:3px 10px;" x-text="rangeLabel"></span>
         </div>
     </div>
@@ -199,6 +208,77 @@
         </div>
     </template>
 
+    {{-- ── Custom view ── --}}
+    <template x-if="view==='custom'">
+        <div>
+            <template x-if="customLoading">
+                <div style="text-align:center;padding:40px;color:#aaa;font-size:13px;">Loading…</div>
+            </template>
+            <template x-if="!customLoading && !customData">
+                <div class="ov-card" style="text-align:center;padding:32px;color:#aaa;font-size:13px;">
+                    Select a date range above and click <strong style="color:#555;">Apply</strong> to view team data.
+                </div>
+            </template>
+            <template x-if="!customLoading && customData">
+                <div>
+                    <div class="ov-card" style="margin-bottom:12px;">
+                        <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:12px;" x-text="'Team overview — ' + customFrom + ' to ' + customTo"></div>
+                        <div style="height:28px;width:100%;border-radius:10px;overflow:hidden;display:flex;margin-bottom:10px;">
+                            <template x-if="customData.totals.office>0">
+                                <div :style="'width:'+customPct(customData.totals.office)+'%;background:#3a7dcc;display:flex;align-items:center;justify-content:center;'">
+                                    <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="customData.totals.office+'d'"></span>
+                                </div>
+                            </template>
+                            <template x-if="customData.totals.remote>0">
+                                <div :style="'width:'+customPct(customData.totals.remote)+'%;background:#1d9e75;display:flex;align-items:center;justify-content:center;'">
+                                    <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="customData.totals.remote+'d'"></span>
+                                </div>
+                            </template>
+                            <template x-if="customData.totals.leave>0">
+                                <div :style="'width:'+customPct(customData.totals.leave)+'%;background:#b4b2a9;display:flex;align-items:center;justify-content:center;'">
+                                    <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="customData.totals.leave+'d'"></span>
+                                </div>
+                            </template>
+                            <template x-if="customData.totals.sick>0">
+                                <div :style="'width:'+customPct(customData.totals.sick)+'%;background:#e24b4a;display:flex;align-items:center;justify-content:center;'">
+                                    <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="customData.totals.sick+'d'"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#3a7dcc;display:inline-block;"></span>In office</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#1d9e75;display:inline-block;"></span>Remote</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#b4b2a9;display:inline-block;"></span>On leave</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>Sick</span>
+                        </div>
+                    </div>
+                    <div class="ov-card">
+                        <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:12px;">Per-person breakdown</div>
+                        <template x-for="p in customData.teamData" :key="p.id">
+                            <div class="prow">
+                                <div class="avatar" style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;"
+                                     :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:13px;font-weight:500;color:#1a1a1a;" x-text="p.name"></div>
+                                    <div style="font-size:11px;color:#888;" x-text="p.role"></div>
+                                </div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    <template x-if="p.office>0"><span class="pill p-in"  x-text="p.office+'d in office'"></span></template>
+                                    <template x-if="p.remote>0"><span class="pill p-re"  x-text="p.remote+'d remote'"></span></template>
+                                    <template x-if="p.leave>0"> <span class="pill p-le"  x-text="p.leave+'d leave'"></span></template>
+                                    <template x-if="p.sick>0">  <span class="pill p-si"  x-text="p.sick+'d sick'"></span></template>
+                                    <template x-if="p.office===0 && p.remote===0 && p.leave===0 && p.sick===0">
+                                        <span class="pill p-off">No data</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+
     {{-- ── Month view ── --}}
     <template x-if="view==='month'">
         <div>
@@ -249,8 +329,33 @@ function teamOverview() {
         notices,
         weekLabels,
         todayIdx,
+        customFrom: '',
+        customTo: '',
+        customData: null,
+        customLoading: false,
 
         setView(v) { this.view = v; this.filter = 'all'; },
+
+        async applyCustom() {
+            if (!this.customFrom || !this.customTo) return;
+            this.customLoading = true;
+            this.customData = null;
+            try {
+                const res = await fetch(`/team/custom?from=${this.customFrom}&to=${this.customTo}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                this.customData = await res.json();
+            } finally {
+                this.customLoading = false;
+            }
+        },
+
+        customPct(n) {
+            if (!this.customData) return 0;
+            const t = this.customData.totals;
+            const total = t.office + t.remote + t.leave + t.sick || 1;
+            return Math.round(n / total * 100);
+        },
 
         get periodSub() {
             const d = new Date();
@@ -261,8 +366,9 @@ function teamOverview() {
 
         get rangeLabel() {
             const d = new Date();
-            if (this.view === 'today') return d.toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short',year:'numeric'});
-            if (this.view === 'week')  return this.weekLabels[0] + ' – ' + this.weekLabels[4];
+            if (this.view === 'today')  return d.toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short',year:'numeric'});
+            if (this.view === 'week')   return this.weekLabels[0] + ' – ' + this.weekLabels[4];
+            if (this.view === 'custom') return (this.customFrom && this.customTo) ? this.customFrom + ' to ' + this.customTo : 'Select a range';
             return d.toLocaleDateString('en-GB', {month:'long',year:'numeric'});
         },
 

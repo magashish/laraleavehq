@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Team (managers only)
     Route::get('/team', [TeamController::class, 'index'])->name('team.index');
+    Route::get('/team/custom', [TeamController::class, 'custom'])->name('team.custom');
 
     // Settings (managers only)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
