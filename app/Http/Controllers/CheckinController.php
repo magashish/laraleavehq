@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyCheckin;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,14 +15,12 @@ class CheckinController extends Controller
         }
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'status'  => 'required|in:office,remote',
+            'user_id'  => 'required|exists:users,id',
+            'status'   => 'required|in:office,remote',
         ]);
 
-        DailyCheckin::updateOrCreate(
-            ['user_id' => $validated['user_id'], 'date' => today()->toDateString()],
-            ['status' => $validated['status'], 'checked_in_at' => now()]
-        );
+        User::where('id', $validated['user_id'])
+            ->update(['work_location' => $validated['status']]);
 
         return response()->json(['ok' => true]);
     }

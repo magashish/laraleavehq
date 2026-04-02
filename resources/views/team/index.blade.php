@@ -101,7 +101,7 @@
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#b4b2a9;display:inline-block;"></span>On leave</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>Sick</span>
             <template x-if="view==='today'">
-                <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;display:inline-block;"></span>Not checked in</span>
+                <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e0e0e0;display:inline-block;"></span>Not set</span>
             </template>
         </div>
     </div>
@@ -380,7 +380,7 @@ function teamOverview() {
             });
             if (res.ok) {
                 const p = this.teamData.find(p => p.id === userId);
-                if (p) p.status = status;
+                if (p) { p.status = status; p.location = status; }
             }
         },
 
@@ -482,7 +482,7 @@ function teamOverview() {
         },
 
         statusLabel(s) {
-            return {office:'In office',remote:'Remote',leave:'On leave',sick:'Sick',unknown:'Not checked in'}[s] || s;
+            return {office:'In office',remote:'Remote',leave:'On leave',sick:'Sick',unknown:'Not set'}[s] || s;
         },
         pillCls(s)    { return ({office:'pill p-in',remote:'pill p-re',leave:'pill p-le',sick:'pill p-si',unknown:'pill p-off'}[s]||'pill p-off'); },
         dayCellCls(s) { return ({office:'dc-in',remote:'dc-re',leave:'dc-le',sick:'dc-si',unknown:'dc-off'}[s]||'dc-off'); },

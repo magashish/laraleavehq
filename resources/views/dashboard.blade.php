@@ -40,25 +40,23 @@
         </div>
     </div>
 
-    {{-- ── Today's location (set by admin, read-only for employees) ── --}}
-    @php $isWeekend = now()->isWeekend(); @endphp
-    @if(!$isWeekend && !$user->isManager())
+    {{-- ── Work location (set by admin, read-only for employees) ── --}}
+    @if(!$user->isManager())
     <div class="card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div>
-                <div class="card-title" style="margin-bottom:2px;">Today's location</div>
-                <div style="font-size:12px;color:#888;">{{ now()->format('l, j F Y') }}</div>
+                <div class="card-title" style="margin-bottom:2px;">My work location</div>
+                <div style="font-size:12px;color:#888;">Set by your manager</div>
             </div>
-            @if($todayCheckin)
+            @if($user->work_location)
                 <span style="font-size:13px;color:#555;">
-                    You're marked as
-                    <strong style="color:{{ $todayCheckin->status === 'office' ? '#1558a0' : '#0d6648' }}">
-                        {{ $todayCheckin->status === 'office' ? 'In office' : 'Remote' }}
+                    You're working
+                    <strong style="color:{{ $user->work_location === 'office' ? '#1558a0' : '#0d6648' }}">
+                        {{ $user->work_location === 'office' ? 'In office' : 'Remotely' }}
                     </strong>
-                    today
                 </span>
             @else
-                <span style="font-size:13px;color:#aaa;">Your location for today hasn't been set yet.</span>
+                <span style="font-size:13px;color:#aaa;">Your location hasn't been set yet.</span>
             @endif
         </div>
     </div>

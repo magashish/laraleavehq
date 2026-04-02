@@ -36,6 +36,7 @@ class User extends Authenticatable
         'days_allowed',
         'color',
         'profile_photo',
+        'work_location',
     ];
 
     protected $hidden = [

@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class TeamController extends Controller
 {
@@ -27,17 +28,12 @@ class TeamController extends Controller
                 ->where('status', 'approved')
                 ->where('start_date', '<=', $monthEnd)
                 ->where('end_date', '>=', $monthStart),
-            'checkins' => fn($q) => $q
-                ->where('date', '>=', $monthStart)
-                ->where('date', '<=', $monthEnd),
         ])->orderBy('name')->get();
 
         $dayOfWeek = now()->dayOfWeekIso; // 1=Mon … 7=Sun
         $todayIdx  = ($dayOfWeek >= 1 && $dayOfWeek <= 5) ? $dayOfWeek - 1 : null;
 
         $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd) {
-            $todayCheckin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $today);
-
             return [
                 'id'        => $emp->id,
                 'name'      => $emp->name,
@@ -45,8 +41,8 @@ class TeamController extends Controller
                 'color'     => $emp->color,
                 'initials'  => $emp->initials(),
                 'photo_url' => $emp->photoUrl(),
+                'location'  => $emp->work_location,
                 'status'    => $this->getUserStatus($emp, $today),
-                'time'      => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
                 'week'      => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
                 'month'     => $this->getMonthStats($emp, $monthStart, $monthEnd),
             ];
@@ -76,9 +72,6 @@ class TeamController extends Controller
                 ->where('status', 'approved')
                 ->where('start_date', '<=', $to)
                 ->where('end_date', '>=', $from),
-            'checkins' => fn($q) => $q
-                ->where('date', '>=', $from)
-                ->where('date', '<=', $to),
         ])->orderBy('name')->get();
 
         $teamData = $employees->map(function ($emp) use ($from, $to) {
@@ -98,20 +91,22 @@ class TeamController extends Controller
                 }
             }
 
-            $office = $emp->checkins->filter(fn($c) => $c->status === 'office')->count();
-            $remote = $emp->checkins->filter(fn($c) => $c->status === 'remote')->count();
+            $workingDays = $this->countWorkingDays($from, min($to, now()->toDateString()));
+            $nonLeave    = max(0, $workingDays - $leave - $sick);
+            $office      = $emp->work_location === 'office' ? $nonLeave : 0;
+            $remote      = $emp->work_location === 'remote' ? $nonLeave : 0;
 
             return [
-                'id'        => $emp->id,
-                'name'      => $emp->name,
-                'role'      => $emp->role,
-                'color'     => $emp->color,
-                'initials'  => $emp->initials(),
-                'photo_url' => $emp->photoUrl(),
-                'office'    => $office,
-                'remote'    => $remote,
-                'leave'     => $leave,
-                'sick'      => $sick,
+                'id'       => $emp->id,
+                'name'     => $emp->name,
+                'role'     => $emp->role,
+                'color'    => $emp->color,
+                'initials' => $emp->initials(),
+                'photo_url'=> $emp->photoUrl(),
+                'office'   => $office,
+                'remote'   => $remote,
+                'leave'    => $leave,
+                'sick'     => $sick,
             ];
         })->values();
 
@@ -137,9 +132,7 @@ class TeamController extends Controller
             return str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick') ? 'sick' : 'leave';
         }
 
-        $checkin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $date);
-
-        return $checkin?->status ?? 'unknown';
+        return $emp->work_location ?? 'unknown';
     }
 
     private function getWeekDates(): array
@@ -147,6 +140,18 @@ class TeamController extends Controller
         $monday = now()->startOfWeek(Carbon::MONDAY);
 
         return array_map(fn($i) => $monday->copy()->addDays($i)->toDateString(), range(0, 4));
+    }
+
+    private function countWorkingDays(string $from, string $to): int
+    {
+        $count = 0;
+        $d = Carbon::parse($from);
+        $e = Carbon::parse($to);
+        while ($d->lte($e)) {
+            if (!$d->isWeekend()) $count++;
+            $d->addDay();
+        }
+        return $count;
     }
 
     private function getMonthStats(User $emp, string $monthStart, string $monthEnd): array
@@ -169,8 +174,10 @@ class TeamController extends Controller
             }
         }
 
-        $office = $emp->checkins->filter(fn($c) => $c->status === 'office')->count();
-        $remote = $emp->checkins->filter(fn($c) => $c->status === 'remote')->count();
+        $workingDays = $this->countWorkingDays($monthStart, min($monthEnd, now()->toDateString()));
+        $nonLeave    = max(0, $workingDays - $leave - $sick);
+        $office      = $emp->work_location === 'office' ? $nonLeave : 0;
+        $remote      = $emp->work_location === 'remote' ? $nonLeave : 0;
 
         return compact('office', 'remote', 'leave', 'sick');
     }
