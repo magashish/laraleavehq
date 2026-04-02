@@ -189,10 +189,16 @@ function calendar() {
         isBankHoliday(d) { return bankHolidays.includes(this.dateStr(d)); },
         hasApprovedLeave(d) {
             const ds = this.dateStr(d);
+            if (bankHolidays.includes(ds)) return false;
+            const dow = new Date(ds).getDay();
+            if (dow === 0 || dow === 6) return false;
             return leaves.some(l => l.status === 'approved' && l.start <= ds && l.end >= ds);
         },
         hasPendingLeave(d) {
             const ds = this.dateStr(d);
+            if (bankHolidays.includes(ds)) return false;
+            const dow = new Date(ds).getDay();
+            if (dow === 0 || dow === 6) return false;
             return leaves.some(l => l.status === 'pending' && l.start <= ds && l.end >= ds);
         },
     };
