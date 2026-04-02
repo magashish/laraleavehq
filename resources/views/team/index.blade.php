@@ -143,7 +143,18 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <span :class="pillCls(p.status)" x-text="statusLabel(p.status)"></span>
-                                <span style="font-size:11px;color:#bbb;min-width:44px;text-align:right;" x-text="p.time"></span>
+                                <div style="display:flex;gap:4px;flex-shrink:0;">
+                                    <button @click="setLocation(p.id, 'office')"
+                                            :style="p.status==='office' ? 'background:#3a7dcc;color:#fff;border-color:#3a7dcc;' : ''"
+                                            style="font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;">
+                                        Office
+                                    </button>
+                                    <button @click="setLocation(p.id, 'remote')"
+                                            :style="p.status==='remote' ? 'background:#1d9e75;color:#fff;border-color:#1d9e75;' : ''"
+                                            style="font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;">
+                                        Remote
+                                    </button>
+                                </div>
                             </div>
                         </template>
                         <template x-if="filteredPeople.length===0">
@@ -355,6 +366,23 @@ function teamOverview() {
         customLoading: false,
 
         setView(v) { this.view = v; this.filter = 'all'; },
+
+        async setLocation(userId, status) {
+            const token = document.querySelector('meta[name="csrf-token"]').content;
+            const res = await fetch('/checkin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ user_id: userId, status }),
+            });
+            if (res.ok) {
+                const p = this.teamData.find(p => p.id === userId);
+                if (p) p.status = status;
+            }
+        },
 
         async applyCustom() {
             if (!this.customFrom || !this.customTo) return;

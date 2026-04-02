@@ -10,15 +10,20 @@ class CheckinController extends Controller
 {
     public function store(Request $request)
     {
+        if (!Auth::user()->isManager()) {
+            abort(403);
+        }
+
         $validated = $request->validate([
-            'status' => 'required|in:office,remote',
+            'user_id' => 'required|exists:users,id',
+            'status'  => 'required|in:office,remote',
         ]);
 
         DailyCheckin::updateOrCreate(
-            ['user_id' => Auth::id(), 'date' => today()->toDateString()],
+            ['user_id' => $validated['user_id'], 'date' => today()->toDateString()],
             ['status' => $validated['status'], 'checked_in_at' => now()]
         );
 
-        return back()->with('checkin_updated', true);
+        return response()->json(['ok' => true]);
     }
 }
