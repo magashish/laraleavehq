@@ -18,7 +18,7 @@ class DashboardController extends Controller
 
         $usedDays      = $user->usedDays();
         $daysRemaining = $user->remainingDays();
-        $todayCheckin  = $user->checkins()->where('date', now()->toDateString())->first();
+        $todayCheckin  = $user->checkins()->where('date', today()->toDateString())->first();
 
         $upcomingLeaves = $leaves
             ->where('start_date', '>=', now()->startOfDay())

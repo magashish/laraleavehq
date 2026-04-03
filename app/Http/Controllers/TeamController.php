@@ -28,12 +28,14 @@ class TeamController extends Controller
                 ->where('status', 'approved')
                 ->where('start_date', '<=', $monthEnd)
                 ->where('end_date', '>=', $monthStart),
+            'checkins' => fn($q) => $q->where('date', $today),
         ])->orderBy('name')->get();
 
         $dayOfWeek = now()->dayOfWeekIso; // 1=Mon … 7=Sun
         $todayIdx  = ($dayOfWeek >= 1 && $dayOfWeek <= 5) ? $dayOfWeek - 1 : null;
 
         $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd) {
+            $todayCheckin = $emp->checkins->first();
             return [
                 'id'        => $emp->id,
                 'name'      => $emp->name,
@@ -43,6 +45,7 @@ class TeamController extends Controller
                 'photo_url' => $emp->photoUrl(),
                 'location'  => $emp->work_location,
                 'status'    => $this->getUserStatus($emp, $today),
+                'time'      => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
                 'week'      => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
                 'month'     => $this->getMonthStats($emp, $monthStart, $monthEnd),
             ];
@@ -130,6 +133,12 @@ class TeamController extends Controller
 
         if ($leave) {
             return str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick') ? 'sick' : 'leave';
+        }
+
+        // For today, prefer the daily check-in over the persistent work_location
+        if ($date === now()->toDateString()) {
+            $checkin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $date);
+            if ($checkin) return $checkin->status;
         }
 
         return $emp->work_location ?? 'unknown';
