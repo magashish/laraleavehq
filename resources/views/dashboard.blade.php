@@ -77,7 +77,7 @@
                 <template x-for="d in ['Su','Mo','Tu','We','Th','Fr','Sa']">
                     <div class="cal-header" x-text="d"></div>
                 </template>
-                <template x-for="(day, idx) in calDays" :key="idx">
+                <template x-for="(day, idx) in calDays" :key="year + '-' + month + '-' + idx">
                     <div class="cal-day"
                          :class="{
                              'cal-empty': !day,
@@ -178,26 +178,29 @@ function calendar() {
         dateStr(d) {
             return `${this.year}-${String(this.month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         },
+        localDate(d) {
+            return new Date(this.year, this.month, d);
+        },
         isPast(d) {
             const t = new Date(); t.setHours(0,0,0,0);
-            return new Date(this.dateStr(d)) < t;
+            return this.localDate(d) < t;
         },
         isToday(d) {
             const t = new Date(); t.setHours(0,0,0,0);
-            return new Date(this.dateStr(d)).getTime() === t.getTime();
+            return this.localDate(d).getTime() === t.getTime();
         },
         isBankHoliday(d) { return bankHolidays.includes(this.dateStr(d)); },
         hasApprovedLeave(d) {
             const ds = this.dateStr(d);
             if (bankHolidays.includes(ds)) return false;
-            const dow = new Date(ds).getDay();
+            const dow = this.localDate(d).getDay();
             if (dow === 0 || dow === 6) return false;
             return leaves.some(l => l.status === 'approved' && l.start <= ds && l.end >= ds);
         },
         hasPendingLeave(d) {
             const ds = this.dateStr(d);
             if (bankHolidays.includes(ds)) return false;
-            const dow = new Date(ds).getDay();
+            const dow = this.localDate(d).getDay();
             if (dow === 0 || dow === 6) return false;
             return leaves.some(l => l.status === 'pending' && l.start <= ds && l.end >= ds);
         },
