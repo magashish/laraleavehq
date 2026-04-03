@@ -96,7 +96,7 @@
             <div class="legend">
                 <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1px solid #86efac;"></div> Approved</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:1px solid #fde047;"></div> Pending</div>
-                <div class="legend-item"><div class="legend-dot" style="border:2px solid #c4b5fd;"></div> Bank holiday</div>
+                <div class="legend-item"><div class="legend-dot" style="border:2px solid #c4b5fd;"></div> Public holiday</div>
             </div>
         </div>
 

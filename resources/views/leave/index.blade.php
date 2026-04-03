@@ -73,7 +73,7 @@
 
                     <template x-if="workingDays > 0">
                         <div class="days-info">
-                            <strong x-text="workingDays"></strong> working day(s) &mdash; weekends &amp; bank holidays excluded
+                            <strong x-text="workingDays"></strong> working day(s) &mdash; weekends &amp; public holidays excluded
                         </div>
                     </template>
 

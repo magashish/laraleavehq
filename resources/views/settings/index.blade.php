@@ -150,7 +150,7 @@
     <template x-if="showBHModal">
         <div class="modal-overlay" @click.self="showBHModal = false">
             <div class="modal">
-                <h3>Add Bank Holiday</h3>
+                <h3>Add Public Holiday</h3>
                 <form method="POST" action="{{ route('settings.bank-holidays.add') }}">
                     @csrf
                     <div class="form-group">
@@ -163,7 +163,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline" @click="showBHModal = false">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add bank holiday</button>
+                        <button type="submit" class="btn btn-primary">Add public holiday</button>
                     </div>
                 </form>
             </div>
@@ -306,7 +306,7 @@
 
     <div class="page-header">
         <h2>Settings</h2>
-        <p>Manage employees, leave types, departments, and bank holidays</p>
+        <p>Manage employees, leave types, departments, and public holidays</p>
     </div>
 
     <div class="tab-row">
@@ -320,7 +320,7 @@
             Departments <span style="font-size:11px;color:#aaa;">({{ $departments->count() }})</span>
         </div>
         <div class="tab" :class="tab === 'bankholidays' ? 'active' : ''" @click="tab = 'bankholidays'">
-            Bank Holidays
+            Public Holidays
         </div>
     </div>
 
@@ -575,7 +575,7 @@
         </div>
     </div>
 
-    {{-- ── Bank Holidays Tab ── --}}
+    {{-- ── Public Holidays Tab ── --}}
     <div x-show="tab === 'bankholidays'">
         @php
             $today = now()->toDateString();
@@ -584,12 +584,12 @@
         @endphp
         <div class="card">
             <div class="card-title">
-                Upcoming Bank Holidays ({{ $upcoming->count() }})
+                Upcoming Public Holidays ({{ $upcoming->count() }})
                 <button class="btn btn-primary btn-sm" @click="showBHModal = true">+ Add</button>
             </div>
 
             @if($upcoming->isEmpty())
-                <div class="empty-state">No upcoming bank holidays.</div>
+                <div class="empty-state">No upcoming public holidays.</div>
             @else
                 @foreach($upcoming as $bh)
                     <div class="bh-item">
@@ -598,7 +598,7 @@
                             <div class="bh-date">{{ $bh->date->format('l, j F Y') }}</div>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <span class="badge badge-bank">Bank holiday</span>
+                            <span class="badge badge-bank">Public holiday</span>
                             <form method="POST" action="{{ route('settings.bank-holidays.remove', $bh) }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-outline btn-sm" style="color:#999;">✕</button>
