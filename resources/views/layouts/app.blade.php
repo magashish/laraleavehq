@@ -12,7 +12,7 @@
     {{-- Sidebar --}}
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <h1>LeaveHQ</h1>
+            <h1>Pinnacle Internet Marketing</h1>
             <p>Leave management</p>
         </div>
 
