@@ -135,8 +135,8 @@
                                     <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
-                                         :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                    <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                         x-text="p.initials"></div>
                                 </template>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
@@ -145,13 +145,11 @@
                                 <span :class="pillCls(p.status)" x-text="statusLabel(p.status)"></span>
                                 <div style="display:flex;gap:4px;flex-shrink:0;">
                                     <button @click="setLocation(p.id, 'office')"
-                                            :style="p.status==='office' ? 'background:#3a7dcc;color:#fff;border-color:#3a7dcc;' : ''"
-                                            style="font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;">
+                                            :style="p.status==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
                                         Office
                                     </button>
                                     <button @click="setLocation(p.id, 'remote')"
-                                            :style="p.status==='remote' ? 'background:#1d9e75;color:#fff;border-color:#1d9e75;' : ''"
-                                            style="font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;">
+                                            :style="p.status==='remote' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #1d9e75;background:#1d9e75;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
                                         Remote
                                     </button>
                                 </div>
@@ -180,8 +178,8 @@
                                     <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
-                                         :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                    <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                         x-text="p.initials"></div>
                                 </template>
                                 <div style="width:124px;flex-shrink:0;min-width:0;">
                                     <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
@@ -281,8 +279,8 @@
                                     <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
-                                         :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                                    <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                         x-text="p.initials"></div>
                                 </template>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:500;color:#1a1a1a;" x-text="p.name"></div>
@@ -317,8 +315,8 @@
                             <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                         </template>
                         <template x-if="!p.photo_url">
-                            <div style="width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;"
-                                 :style="'background:'+p.color+'33;color:'+p.color" x-text="p.initials"></div>
+                            <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                 x-text="p.initials"></div>
                         </template>
                         <div style="width:124px;flex-shrink:0;min-width:0;">
                             <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
