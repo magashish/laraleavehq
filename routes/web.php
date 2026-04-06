@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Team (managers only)
     Route::get('/team', [TeamController::class, 'index'])->name('team.index');
     Route::get('/team/custom', [TeamController::class, 'custom'])->name('team.custom');
+    Route::post('/team/notices', [TeamController::class, 'storeNotice'])->name('team.notices.store');
+    Route::delete('/team/notices/{notice}', [TeamController::class, 'destroyNotice'])->name('team.notices.destroy');
 
     // Settings (managers only)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
+use App\Models\TeamNotice;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -53,10 +54,12 @@ class TeamController extends Controller
             ];
         })->values();
 
-        $notices    = $this->buildNotices($employees, $today);
-        $weekLabels = array_map(fn($d) => Carbon::parse($d)->format('D'), $weekDates);
+        $notices        = $this->buildNotices($employees, $today);
+        $weekLabels     = array_map(fn($d) => Carbon::parse($d)->format('D'), $weekDates);
+        $managerNotices = TeamNotice::with(['author', 'targetUser'])->latest()->get();
+        $allEmployees   = $employees;
 
-        return view('team.index', compact('teamData', 'notices', 'todayIdx', 'weekLabels'));
+        return view('team.index', compact('teamData', 'notices', 'todayIdx', 'weekLabels', 'managerNotices', 'allEmployees'));
     }
 
     public function custom(Request $request)
@@ -123,6 +126,31 @@ class TeamController extends Controller
         ];
 
         return response()->json(compact('teamData', 'totals'));
+    }
+
+    public function storeNotice(Request $request)
+    {
+        if (!Auth::user()->isManager()) abort(403);
+
+        $validated = $request->validate([
+            'message'        => 'required|string|max:500',
+            'target_user_id' => 'nullable|exists:users,id',
+        ]);
+
+        TeamNotice::create([
+            'created_by'     => Auth::id(),
+            'target_user_id' => $validated['target_user_id'] ?? null,
+            'message'        => $validated['message'],
+        ]);
+
+        return back()->with('success', 'Notice posted.');
+    }
+
+    public function destroyNotice(TeamNotice $notice)
+    {
+        if (!Auth::user()->isManager()) abort(403);
+        $notice->delete();
+        return back();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

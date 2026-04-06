@@ -212,9 +212,63 @@
             </div>
 
             {{-- Notices card --}}
-            <div class="ov-card">
-                <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:12px;">Notices</div>
-                <template x-if="notices.length===0">
+            <div class="ov-card" x-data="{ showForm: false }">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;">Notices</div>
+                    <button @click="showForm=!showForm"
+                            :style="showForm ? 'font-size:11px;padding:3px 12px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:11px;padding:3px 12px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
+                        + Post notice
+                    </button>
+                </div>
+
+                {{-- Post notice form --}}
+                <div x-show="showForm" x-transition style="margin-bottom:12px;background:#f9f8f6;border-radius:10px;padding:12px;">
+                    <form method="POST" action="{{ route('team.notices.store') }}">
+                        @csrf
+                        <div style="margin-bottom:8px;">
+                            <select name="target_user_id" style="width:100%;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid #e0e0e0;background:#fff;color:#1a1a1a;font-family:inherit;margin-bottom:8px;">
+                                <option value="">— Everyone —</option>
+                                @foreach($allEmployees as $emp)
+                                    <option value="{{ $emp->id }}">{{ $emp->name }}</option>
+                                @endforeach
+                            </select>
+                            <textarea name="message" rows="3" maxlength="500" required placeholder="Write a notice or reminder…"
+                                      style="width:100%;font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e0;background:#fff;color:#1a1a1a;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+                        </div>
+                        <div style="display:flex;gap:6px;justify-content:flex-end;">
+                            <button type="button" @click="showForm=false" style="font-size:11px;padding:4px 14px;border-radius:99px;border:1px solid #d5d2cc;background:#fff;color:#555;cursor:pointer;font-family:inherit;">Cancel</button>
+                            <button type="submit" style="font-size:11px;padding:4px 14px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;">Post</button>
+                        </div>
+                    </form>
+                </div>
+
+                {{-- Manager-posted notices --}}
+                @if($managerNotices->isNotEmpty())
+                    <div style="font-size:10px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Posted by managers</div>
+                    @foreach($managerNotices as $mn)
+                        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ee;">
+                            <span style="font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;flex-shrink:0;margin-top:1px;background:#ede9fe;color:#5b21b6;">Note</span>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:12px;color:#1a1a1a;line-height:1.4;">{{ $mn->message }}</div>
+                                <div style="font-size:10px;color:#aaa;margin-top:2px;">
+                                    To: <strong style="color:#888;">{{ $mn->targetUser ? $mn->targetUser->name : 'Everyone' }}</strong>
+                                    &bull; by {{ $mn->author->name }}
+                                    &bull; {{ $mn->created_at->diffForHumans() }}
+                                </div>
+                            </div>
+                            <form method="POST" action="{{ route('team.notices.destroy', $mn) }}" style="flex-shrink:0;">
+                                @csrf @method('DELETE')
+                                <button type="submit" style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid #f0c0c0;background:#fff;color:#c03030;cursor:pointer;font-family:inherit;" onclick="return confirm('Delete this notice?')">✕</button>
+                            </form>
+                        </div>
+                    @endforeach
+                    @if($notices)
+                        <div style="font-size:10px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px;">System alerts</div>
+                    @endif
+                @endif
+
+                {{-- System-generated notices --}}
+                <template x-if="notices.length===0 && {{ $managerNotices->isEmpty() ? 'true' : 'false' }}">
                     <div style="font-size:13px;color:#aaa;padding:8px 0;">Nothing to flag today.</div>
                 </template>
                 <template x-for="n in notices" :key="n.title">
