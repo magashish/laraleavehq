@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BankHoliday;
 use App\Models\LeaveRequest;
 use App\Models\TeamNotice;
 use App\Models\User;
@@ -23,6 +24,11 @@ class TeamController extends Controller
         $monthStart = now()->startOfMonth()->toDateString();
         $monthEnd   = now()->endOfMonth()->toDateString();
 
+        $publicHolidays = BankHoliday::whereBetween('date', [$monthStart, $monthEnd])
+            ->pluck('date')
+            ->map(fn($d) => $d->toDateString())
+            ->toArray();
+
         $employees = User::with([
             'leaveRequests' => fn($q) => $q
                 ->with('leaveType')
@@ -35,7 +41,7 @@ class TeamController extends Controller
         $dayOfWeek = now()->dayOfWeekIso; // 1=Mon … 7=Sun
         $todayIdx  = ($dayOfWeek >= 1 && $dayOfWeek <= 5) ? $dayOfWeek - 1 : null;
 
-        $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd) {
+        $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd, $publicHolidays) {
             $todayCheckin = $emp->checkins->first();
             $signedIn     = $todayCheckin && $todayCheckin->checked_in_at && !$todayCheckin->signed_out_at;
             return [
@@ -46,11 +52,11 @@ class TeamController extends Controller
                 'initials'   => $emp->initials(),
                 'photo_url'  => $emp->photoUrl(),
                 'location'   => $emp->work_location,
-                'status'     => $this->getUserStatus($emp, $today),
+                'status'     => $this->getUserStatus($emp, $today, $publicHolidays),
                 'signed_in'  => $signedIn,
                 'time'       => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
-                'week'       => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
-                'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd),
+                'week'       => array_map(fn($d) => $this->getUserStatus($emp, $d, $publicHolidays), $weekDates),
+                'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd, $publicHolidays),
             ];
         })->values();
 
@@ -74,6 +80,11 @@ class TeamController extends Controller
         $from = $validated['from'];
         $to   = $validated['to'];
 
+        $publicHolidays = BankHoliday::whereBetween('date', [$from, $to])
+            ->pluck('date')
+            ->map(fn($d) => $d->toDateString())
+            ->toArray();
+
         $employees = User::with([
             'leaveRequests' => fn($q) => $q
                 ->with('leaveType')
@@ -82,7 +93,7 @@ class TeamController extends Controller
                 ->where('end_date', '>=', $from),
         ])->orderBy('name')->get();
 
-        $teamData = $employees->map(function ($emp) use ($from, $to) {
+        $teamData = $employees->map(function ($emp) use ($from, $to, $publicHolidays) {
             $leave = 0;
             $sick  = 0;
 
@@ -94,12 +105,14 @@ class TeamController extends Controller
                 $d = Carbon::parse($start);
                 $e = Carbon::parse($end);
                 while ($d->lte($e)) {
-                    if (!$d->isWeekend()) { $isSick ? $sick++ : $leave++; }
+                    if (!$d->isWeekend() && !in_array($d->toDateString(), $publicHolidays)) {
+                        $isSick ? $sick++ : $leave++;
+                    }
                     $d->addDay();
                 }
             }
 
-            $workingDays = $this->countWorkingDays($from, min($to, now()->toDateString()));
+            $workingDays = $this->countWorkingDays($from, min($to, now()->toDateString()), $publicHolidays);
             $nonLeave    = max(0, $workingDays - $leave - $sick);
             $office      = $emp->work_location === 'office' ? $nonLeave : 0;
             $remote      = $emp->work_location === 'remote' ? $nonLeave : 0;
@@ -155,8 +168,12 @@ class TeamController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function getUserStatus(User $emp, string $date): string
+    private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string
     {
+        if (in_array($date, $publicHolidays)) {
+            return 'holiday';
+        }
+
         $leave = $emp->leaveRequests->first(
             fn($l) => $l->start_date->toDateString() <= $date && $l->end_date->toDateString() >= $date
         );
@@ -164,10 +181,6 @@ class TeamController extends Controller
         if ($leave) {
             return str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick') ? 'sick' : 'leave';
         }
-
-        // For today, a signed-in record confirms presence — use work_location for office/remote
-        // (daily check-in is now just attendance, not location)
-
 
         return $emp->work_location ?? 'unknown';
     }
@@ -179,19 +192,21 @@ class TeamController extends Controller
         return array_map(fn($i) => $monday->copy()->addDays($i)->toDateString(), range(0, 4));
     }
 
-    private function countWorkingDays(string $from, string $to): int
+    private function countWorkingDays(string $from, string $to, array $publicHolidays = []): int
     {
         $count = 0;
         $d = Carbon::parse($from);
         $e = Carbon::parse($to);
         while ($d->lte($e)) {
-            if (!$d->isWeekend()) $count++;
+            if (!$d->isWeekend() && !in_array($d->toDateString(), $publicHolidays)) {
+                $count++;
+            }
             $d->addDay();
         }
         return $count;
     }
 
-    private function getMonthStats(User $emp, string $monthStart, string $monthEnd): array
+    private function getMonthStats(User $emp, string $monthStart, string $monthEnd, array $publicHolidays = []): array
     {
         $leave = 0;
         $sick  = 0;
@@ -204,14 +219,14 @@ class TeamController extends Controller
             $d = Carbon::parse($start);
             $e = Carbon::parse($end);
             while ($d->lte($e)) {
-                if (!$d->isWeekend()) {
+                if (!$d->isWeekend() && !in_array($d->toDateString(), $publicHolidays)) {
                     $isSick ? $sick++ : $leave++;
                 }
                 $d->addDay();
             }
         }
 
-        $workingDays = $this->countWorkingDays($monthStart, min($monthEnd, now()->toDateString()));
+        $workingDays = $this->countWorkingDays($monthStart, min($monthEnd, now()->toDateString()), $publicHolidays);
         $nonLeave    = max(0, $workingDays - $leave - $sick);
         $office      = $emp->work_location === 'office' ? $nonLeave : 0;
         $remote      = $emp->work_location === 'remote' ? $nonLeave : 0;
