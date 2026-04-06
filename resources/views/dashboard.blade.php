@@ -119,7 +119,7 @@
         </div>
 
         <div>
-            {{-- Upcoming leave --}}
+            {{-- Upcoming leave + public holidays --}}
             <div class="card">
                 <div class="card-title">My upcoming leave</div>
                 @forelse($upcomingLeaves as $leave)
@@ -128,13 +128,26 @@
                             <div style="font-size:13px;font-weight:500;">
                                 {{ $leave->start_date->format('d M') }} &ndash; {{ $leave->end_date->format('d M Y') }}
                             </div>
-                            <div style="font-size:12px;color:#888;">{{ $leave->days }} day(s) &bull; {{ $leave->reason }}</div>
+                            <div style="font-size:12px;color:#888;">{{ $leave->days }} day(s)@if($leave->leaveType) &bull; {{ $leave->leaveType->name }}@endif</div>
                         </div>
                         <span class="badge badge-{{ $leave->status }}">{{ $leave->status }}</span>
                     </div>
                 @empty
                     <div class="empty-state" style="padding:20px 0;">No upcoming leave.</div>
                 @endforelse
+
+                @if($upcomingHolidays->isNotEmpty())
+                    <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;">Upcoming Public Holidays</div>
+                    @foreach($upcomingHolidays as $holiday)
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0ede8;">
+                            <div>
+                                <div style="font-size:13px;font-weight:500;">{{ $holiday->name }}</div>
+                                <div style="font-size:12px;color:#888;">{{ $holiday->date->format('l, d M Y') }}</div>
+                            </div>
+                            <span style="font-size:11px;padding:3px 9px;border-radius:99px;background:#ede9fe;color:#5b21b6;font-weight:500;">Public holiday</span>
+                        </div>
+                    @endforeach
+                @endif
             </div>
 
             @if(Auth::user()->isManager() && $offToday && $offToday->isNotEmpty())

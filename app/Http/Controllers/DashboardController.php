@@ -26,6 +26,12 @@ class DashboardController extends Controller
             ->take(4)
             ->values();
 
+        $upcomingHolidays = $bankHolidays
+            ->filter(fn($b) => $b->date->toDateString() >= now()->toDateString())
+            ->sortBy('date')
+            ->take(4)
+            ->values();
+
         $pendingApprovalCount = null;
         $offToday = null;
         if ($user->isManager()) {
@@ -42,7 +48,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'user', 'leaves', 'bankHolidayDates', 'usedDays', 'daysRemaining',
-            'upcomingLeaves', 'pendingApprovalCount', 'offToday', 'todayCheckin'
+            'upcomingLeaves', 'upcomingHolidays', 'pendingApprovalCount', 'offToday', 'todayCheckin'
         ));
     }
 }
