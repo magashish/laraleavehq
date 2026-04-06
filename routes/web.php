@@ -14,8 +14,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Daily check-in
-    Route::post('/checkin', [CheckinController::class, 'store'])->name('checkin.store');
+    // Daily attendance
+    Route::post('/checkin',  [CheckinController::class, 'store'])->name('checkin.store');
+    Route::post('/checkout', [CheckinController::class, 'checkout'])->name('checkin.checkout');
 
     // Leave management
     Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');

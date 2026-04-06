@@ -36,18 +36,20 @@ class TeamController extends Controller
 
         $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd) {
             $todayCheckin = $emp->checkins->first();
+            $signedIn     = $todayCheckin && $todayCheckin->checked_in_at && !$todayCheckin->signed_out_at;
             return [
-                'id'        => $emp->id,
-                'name'      => $emp->name,
-                'role'      => $emp->role,
-                'color'     => $emp->color,
-                'initials'  => $emp->initials(),
-                'photo_url' => $emp->photoUrl(),
-                'location'  => $emp->work_location,
-                'status'    => $this->getUserStatus($emp, $today),
-                'time'      => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
-                'week'      => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
-                'month'     => $this->getMonthStats($emp, $monthStart, $monthEnd),
+                'id'         => $emp->id,
+                'name'       => $emp->name,
+                'role'       => $emp->role,
+                'color'      => $emp->color,
+                'initials'   => $emp->initials(),
+                'photo_url'  => $emp->photoUrl(),
+                'location'   => $emp->work_location,
+                'status'     => $this->getUserStatus($emp, $today),
+                'signed_in'  => $signedIn,
+                'time'       => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
+                'week'       => array_map(fn($d) => $this->getUserStatus($emp, $d), $weekDates),
+                'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd),
             ];
         })->values();
 
@@ -135,11 +137,9 @@ class TeamController extends Controller
             return str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick') ? 'sick' : 'leave';
         }
 
-        // For today, prefer the daily check-in over the persistent work_location
-        if ($date === now()->toDateString()) {
-            $checkin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $date);
-            if ($checkin) return $checkin->status;
-        }
+        // For today, a signed-in record confirms presence — use work_location for office/remote
+        // (daily check-in is now just attendance, not location)
+
 
         return $emp->work_location ?? 'unknown';
     }

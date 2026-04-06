@@ -143,7 +143,11 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <span :class="pillCls(p.status)" x-text="statusLabel(p.status)"></span>
-                                <span style="font-size:11px;color:#bbb;min-width:36px;text-align:right;flex-shrink:0;" x-text="p.time"></span>
+                                <span x-show="p.signed_in"
+                                      style="font-size:10px;padding:2px 8px;border-radius:99px;background:#d8f5ec;color:#0d6648;font-weight:500;white-space:nowrap;flex-shrink:0;">
+                                    ✓ <span x-text="p.time"></span>
+                                </span>
+                                <span x-show="!p.signed_in" style="font-size:11px;color:#ccc;flex-shrink:0;">Not signed in</span>
                                 <div style="display:flex;gap:4px;flex-shrink:0;">
                                     <button @click="setLocation(p.id, 'office')"
                                             :style="p.status==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
