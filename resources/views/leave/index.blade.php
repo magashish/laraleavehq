@@ -47,7 +47,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Start date</label>
-                            <input type="date" name="start_date" class="form-input" x-model="startDate" @change="recalc()" required>
+                            <input type="date" name="start_date" class="form-input" x-model="startDate" @change="if(isHalfDay) endDate = startDate; recalc()" required>
                         </div>
                         <div class="form-group" x-show="!isHalfDay">
                             <label class="form-label">End date</label>
