@@ -415,8 +415,8 @@
                                 {{-- Day cells --}}
                                 <template x-for="(s, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div :style="gridCellStyle(s)">
-                                            <span :style="gridCellTextStyle(s)" x-text="gridCellLabel(s)"></span>
+                                        <div class="day-cell" :class="dayCellCls(s)">
+                                            <span style="font-size:9px;font-weight:500;" :class="dayLblCls(s)" x-text="dayLbl(s)"></span>
                                         </div>
                                     </td>
                                 </template>
@@ -426,13 +426,13 @@
                 </table>
 
                 {{-- Legend --}}
-                <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:10px;border-top:1px solid #f0f0ee;">
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#ddeeff;display:inline-block;"></span>In office (✓)</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#d8f5ec;display:inline-block;"></span>Remote (R)</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#efefed;display:inline-block;"></span>Leave (Lv)</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#fde8e8;display:inline-block;"></span>Sick (Sk)</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#ede9fe;display:inline-block;"></span>Public holiday (PH)</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#f0f0ee;display:inline-block;"></span>Weekend</span>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:10px;border-top:1px solid #f0f0ee;">
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ddeeff;border:1px solid #b5d4f4;display:inline-block;"></span>In</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#d8f5ec;border:1px solid #9fe1cb;display:inline-block;"></span>WFH</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#efefed;border:1px solid #d3d1c7;display:inline-block;"></span>Leave</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fde8e8;border:1px solid #f7c1c1;display:inline-block;"></span>Sick</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ede9fe;border:1px solid #c4b5fd;display:inline-block;"></span>Holiday</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#f5f5f3;border:1px solid #e0e0e0;display:inline-block;"></span>Weekend</span>
                 </div>
             </div>
         </div>
@@ -575,18 +575,6 @@ function teamOverview() {
         get filteredPeople() {
             if (this.filter === 'all') return this.teamData;
             return this.teamData.filter(p => p.status === this.filter);
-        },
-
-        gridCellStyle(s) {
-            const bg = {office:'#ddeeff',remote:'#d8f5ec',leave:'#efefed',sick:'#fde8e8',holiday:'#ede9fe',weekend:'#f5f5f3',future:'#fafafa',unknown:'#f5f5f3'};
-            return `width:24px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;background:${bg[s]||'#fafafa'};`;
-        },
-        gridCellTextStyle(s) {
-            const col = {office:'#1558a0',remote:'#0d6648',leave:'#777',sick:'#a02020',holiday:'#5b21b6',weekend:'transparent',future:'transparent',unknown:'#ccc'};
-            return `font-size:8px;font-weight:700;color:${col[s]||'#ccc'};`;
-        },
-        gridCellLabel(s) {
-            return {office:'✓',remote:'R',leave:'Lv',sick:'Sk',holiday:'PH',weekend:'',future:'',unknown:''}[s]||'';
         },
 
         statusLabel(s) {
