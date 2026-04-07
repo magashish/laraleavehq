@@ -376,37 +376,63 @@
     {{-- ── Month view ── --}}
     <template x-if="view==='month'">
         <div>
-            <div class="ov-card">
-                <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:12px;">In office / remote days per person — this month</div>
-                <template x-for="p in teamData" :key="p.id">
-                    @php $workingDays = now()->daysInMonth; @endphp
-                    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ee;">
-                        <template x-if="p.photo_url">
-                            <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            <div class="ov-card" style="overflow-x:auto;">
+                <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:14px;">
+                    Daily attendance — {{ now()->format('F Y') }}
+                </div>
+                <table style="border-collapse:collapse;width:100%;">
+                    <thead>
+                        <tr>
+                            {{-- Sticky name header --}}
+                            <th style="min-width:160px;text-align:left;font-size:11px;color:#aaa;font-weight:500;padding:0 12px 8px 0;position:sticky;left:0;background:#fff;z-index:2;"></th>
+                            <template x-for="d in monthDayInfo" :key="d.num">
+                                <th :style="d.weekend ? 'width:26px;min-width:26px;text-align:center;padding:0 1px 8px;' : 'width:26px;min-width:26px;text-align:center;padding:0 1px 8px;'">
+                                    <div :style="d.weekend ? 'font-size:10px;color:#ccc;font-weight:600;' : 'font-size:10px;color:#aaa;font-weight:600;'" x-text="d.num"></div>
+                                    <div :style="d.weekend ? 'font-size:9px;color:#ddd;' : 'font-size:9px;color:#bbb;'" x-text="d.label"></div>
+                                </th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="p in teamData" :key="p.id">
+                            <tr>
+                                {{-- Sticky name cell --}}
+                                <td style="padding:3px 12px 3px 0;position:sticky;left:0;background:#fff;z-index:1;border-bottom:1px solid #f5f5f3;">
+                                    <div style="display:flex;align-items:center;gap:7px;">
+                                        <template x-if="p.photo_url">
+                                            <img :src="p.photo_url" :alt="p.name" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                        </template>
+                                        <template x-if="!p.photo_url">
+                                            <div :style="'width:26px;height:26px;font-size:9px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                                 x-text="p.initials"></div>
+                                        </template>
+                                        <div>
+                                            <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;" x-text="p.name"></div>
+                                            <div style="font-size:10px;color:#aaa;white-space:nowrap;" x-text="p.role"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                {{-- Day cells --}}
+                                <template x-for="(s, i) in p.monthGrid" :key="i">
+                                    <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
+                                        <div :style="gridCellStyle(s)">
+                                            <span :style="gridCellTextStyle(s)" x-text="gridCellLabel(s)"></span>
+                                        </div>
+                                    </td>
+                                </template>
+                            </tr>
                         </template>
-                        <template x-if="!p.photo_url">
-                            <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
-                                 x-text="p.initials"></div>
-                        </template>
-                        <div style="width:124px;flex-shrink:0;min-width:0;">
-                            <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
-                            <div style="font-size:11px;color:#888;" x-text="p.role"></div>
-                        </div>
-                        <div style="flex:1;height:14px;background:#f0f0ee;border-radius:3px;overflow:hidden;display:flex;">
-                            <div :style="'width:'+monthPct(p.month.office)+'%;background:#3a7dcc;height:100%;'"></div>
-                            <div :style="'width:'+monthPct(p.month.remote)+'%;background:#1d9e75;height:100%;'"></div>
-                            <div :style="'width:'+monthPct(p.month.leave)+'%;background:#b4b2a9;height:100%;'"></div>
-                            <div :style="'width:'+monthPct(p.month.sick)+'%;background:#e24b4a;height:100%;'"></div>
-                        </div>
-                        <span style="font-size:10px;color:#bbb;width:64px;text-align:right;flex-shrink:0;"
-                              x-text="p.month.office+'d in / '+p.month.remote+'d WFH'"></span>
-                    </div>
-                </template>
-                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#3a7dcc;display:inline-block;"></span>In office</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#1d9e75;display:inline-block;"></span>Remote</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#b4b2a9;display:inline-block;"></span>Leave</span>
-                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#e24b4a;display:inline-block;"></span>Sick</span>
+                    </tbody>
+                </table>
+
+                {{-- Legend --}}
+                <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:10px;border-top:1px solid #f0f0ee;">
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#ddeeff;display:inline-block;"></span>In office (✓)</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#d8f5ec;display:inline-block;"></span>Remote (R)</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#efefed;display:inline-block;"></span>Leave (Lv)</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#fde8e8;display:inline-block;"></span>Sick (Sk)</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#ede9fe;display:inline-block;"></span>Public holiday (PH)</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;border-radius:3px;background:#f0f0ee;display:inline-block;"></span>Weekend</span>
                 </div>
             </div>
         </div>
@@ -416,10 +442,11 @@
 
 <script>
 function teamOverview() {
-    const teamData   = @json($teamData);
-    const notices    = @json($notices);
-    const weekLabels = @json($weekLabels);
-    const todayIdx   = {{ $todayIdx ?? 'null' }};
+    const teamData    = @json($teamData);
+    const notices     = @json($notices);
+    const weekLabels  = @json($weekLabels);
+    const todayIdx    = {{ $todayIdx ?? 'null' }};
+    const monthDayInfo = @json($monthDayInfo);
 
     return {
         view: 'today',
@@ -428,6 +455,7 @@ function teamOverview() {
         notices,
         weekLabels,
         todayIdx,
+        monthDayInfo,
         customFrom: '',
         customTo: '',
         customData: null,
@@ -547,6 +575,18 @@ function teamOverview() {
         get filteredPeople() {
             if (this.filter === 'all') return this.teamData;
             return this.teamData.filter(p => p.status === this.filter);
+        },
+
+        gridCellStyle(s) {
+            const bg = {office:'#ddeeff',remote:'#d8f5ec',leave:'#efefed',sick:'#fde8e8',holiday:'#ede9fe',weekend:'#f5f5f3',future:'#fafafa',unknown:'#f5f5f3'};
+            return `width:24px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;background:${bg[s]||'#fafafa'};`;
+        },
+        gridCellTextStyle(s) {
+            const col = {office:'#1558a0',remote:'#0d6648',leave:'#777',sick:'#a02020',holiday:'#5b21b6',weekend:'transparent',future:'transparent',unknown:'#ccc'};
+            return `font-size:8px;font-weight:700;color:${col[s]||'#ccc'};`;
+        },
+        gridCellLabel(s) {
+            return {office:'✓',remote:'R',leave:'Lv',sick:'Sk',holiday:'PH',weekend:'',future:'',unknown:''}[s]||'';
         },
 
         statusLabel(s) {

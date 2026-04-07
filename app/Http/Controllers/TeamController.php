@@ -24,6 +24,16 @@ class TeamController extends Controller
         $monthStart = now()->startOfMonth()->toDateString();
         $monthEnd   = now()->endOfMonth()->toDateString();
 
+        $monthDays    = now()->daysInMonth;
+        $monthDayInfo = collect(range(1, $monthDays))->map(function ($day) {
+            $d = now()->startOfMonth()->addDays($day - 1);
+            return [
+                'num'     => $day,
+                'label'   => $d->format('D')[0],
+                'weekend' => $d->isWeekend(),
+            ];
+        })->values()->toArray();
+
         $publicHolidays = BankHoliday::whereBetween('date', [$monthStart, $monthEnd])
             ->pluck('date')
             ->map(fn($d) => $d->toDateString())
@@ -57,6 +67,7 @@ class TeamController extends Controller
                 'time'       => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
                 'week'       => array_map(fn($d) => $this->getUserStatus($emp, $d, $publicHolidays), $weekDates),
                 'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd, $publicHolidays),
+                'monthGrid'  => $this->getMonthDayStatuses($emp, $monthStart, $monthEnd, $publicHolidays),
             ];
         })->values();
 
@@ -65,7 +76,7 @@ class TeamController extends Controller
         $managerNotices = TeamNotice::with(['author', 'targetUser'])->latest()->get();
         $allEmployees   = $employees;
 
-        return view('team.index', compact('teamData', 'notices', 'todayIdx', 'weekLabels', 'managerNotices', 'allEmployees'));
+        return view('team.index', compact('teamData', 'notices', 'todayIdx', 'weekLabels', 'managerNotices', 'allEmployees', 'monthDayInfo'));
     }
 
     public function custom(Request $request)
@@ -204,6 +215,28 @@ class TeamController extends Controller
             $d->addDay();
         }
         return $count;
+    }
+
+    private function getMonthDayStatuses(User $emp, string $monthStart, string $monthEnd, array $publicHolidays = []): array
+    {
+        $statuses = [];
+        $today    = now()->toDateString();
+        $d        = Carbon::parse($monthStart);
+        $end      = Carbon::parse($monthEnd);
+
+        while ($d->lte($end)) {
+            $dateStr = $d->toDateString();
+            if ($d->isWeekend()) {
+                $statuses[] = 'weekend';
+            } elseif ($dateStr > $today) {
+                $statuses[] = 'future';
+            } else {
+                $statuses[] = $this->getUserStatus($emp, $dateStr, $publicHolidays);
+            }
+            $d->addDay();
+        }
+
+        return $statuses;
     }
 
     private function getMonthStats(User $emp, string $monthStart, string $monthEnd, array $publicHolidays = []): array
