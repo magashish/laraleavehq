@@ -1,4 +1,17 @@
 <x-app-layout>
+<style>
+.icon-btn { display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid #e0e0e0;background:#f5f5f3;cursor:pointer;flex-shrink:0;transition:background .15s; }
+.icon-btn:hover { background:#ebebeb; }
+.icon-btn.approve { border-color:#6ee7b7;background:#f0fdf4; }
+.icon-btn.approve:hover { background:#dcfce7; }
+.icon-btn.reject  { border-color:#fca5a5;background:#fff5f5; }
+.icon-btn.reject:hover  { background:#fee2e2; }
+.icon-btn.danger  { border-color:#e0e0e0;background:#fff; }
+.icon-btn.danger:hover  { background:#fee2e2;border-color:#fca5a5; }
+@media (max-width: 768px) {
+  .leave-table-wrap { overflow-x:auto;-webkit-overflow-scrolling:touch; }
+}
+</style>
 <div class="page" x-data="leavePage()" x-init="init()">
 
     {{-- ── Leave Request Modal ── --}}
@@ -134,6 +147,7 @@
             <div class="empty-state">No <span x-text="tab === 'all' ? '' : tab"></span> leave requests.</div>
         </template>
         <template x-if="filtered.length > 0">
+            <div class="leave-table-wrap">
             <table>
                 <thead>
                     <tr>
@@ -177,31 +191,35 @@
                             <td style="color:#555;font-size:12px;" x-text="l.reason || '—'"></td>
                             <td><span class="badge" :class="'badge-' + l.status" x-text="l.status"></span></td>
                             <td>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <div style="display:flex;gap:5px;align-items:center;">
                                     @if(Auth::user()->isManager())
                                         <template x-if="l.status === 'pending'">
-                                            <span style="display:flex;gap:4px;">
+                                            <span style="display:flex;gap:5px;">
                                                 <form method="POST" :action="'/leave/' + l.id" style="display:inline;">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="approved">
                                                     @if(Auth::user()->isAdmin())
                                                         <input type="hidden" name="admin_override" value="0" x-bind:value="adminOverride ? '1' : '0'">
                                                     @endif
-                                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                                    <button type="submit" class="icon-btn approve" title="Approve">
+                                                        <svg width="14" height="14" fill="none" stroke="#059669" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                                    </button>
                                                 </form>
                                                 <form method="POST" :action="'/leave/' + l.id" style="display:inline;">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
-                                                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                                    <button type="submit" class="icon-btn reject" title="Reject">
+                                                        <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                    </button>
                                                 </form>
                                             </span>
                                         </template>
                                     @endif
                                     <form method="POST" :action="'/leave/' + l.id" style="display:inline;">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-outline btn-sm"
-                                            onclick="return confirm('Remove this leave request?')"
-                                            style="color:#999;">✕</button>
+                                        <button type="submit" class="icon-btn danger" title="Delete" onclick="return confirm('Remove this leave request?')">
+                                            <svg width="14" height="14" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                        </button>
                                     </form>
                                 </div>
                             </td>
@@ -209,6 +227,7 @@
                     </template>
                 </tbody>
             </table>
+            </div>
         </template>
     </div>
 
