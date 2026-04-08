@@ -115,7 +115,7 @@
 
     {{-- ── Today / Week: people + notices ── --}}
     <template x-if="view==='today' || view==='week'">
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px;">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px;" class="team-notices-grid">
 
             {{-- People card --}}
             <div class="ov-card" style="overflow-x:auto;">

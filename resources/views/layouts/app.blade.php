@@ -67,6 +67,7 @@
                 overflow-y: auto;
             }
             .sidebar.sidebar-open { left: 0 !important; }
+            .team-notices-grid { grid-template-columns: 1fr !important; }
         }
     </style>
 </head>
