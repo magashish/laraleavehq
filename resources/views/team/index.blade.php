@@ -28,6 +28,9 @@
 .prow:last-child { border-bottom:none; }
 @media (max-width: 768px) {
   .team-notices-grid { grid-template-columns: 1fr !important; }
+  .prow { flex-wrap: wrap; row-gap: 4px; }
+  .prow-name { flex: 1; min-width: calc(100% - 48px); }
+  .prow-meta { width: 100%; display: flex; align-items: center; gap: 8px; padding-left: 40px; }
   .prow-location { display: none !important; }
   .prow-time { width: auto !important; }
 }
@@ -151,10 +154,11 @@
                                     <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
                                          x-text="p.initials"></div>
                                 </template>
-                                <div style="flex:1;min-width:0;">
+                                <div class="prow-name" style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
+                                <div class="prow-meta" style="display:contents;">
                                 <span :class="pillCls(p.status)" x-text="statusLabel(p.status)"></span>
                                 <div class="prow-time" style="width:90px;flex-shrink:0;display:flex;justify-content:center;">
                                     <span x-show="p.signed_in"
@@ -173,6 +177,7 @@
                                         Remote
                                     </button>
                                 </div>
+                                </div>{{-- end prow-meta --}}
                             </div>
                         </template>
                         <template x-if="filteredPeople.length===0">
