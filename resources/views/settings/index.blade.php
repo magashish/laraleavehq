@@ -1,4 +1,13 @@
 <x-app-layout>
+<style>
+.icon-btn { display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid #e0e0e0;background:#f5f5f3;cursor:pointer;flex-shrink:0;transition:background .15s; }
+.icon-btn:hover { background:#ebebeb; }
+.icon-btn.danger { border-color:#fca5a5;background:#fff; }
+.icon-btn.danger:hover { background:#fee2e2; }
+@media (max-width: 768px) {
+  .card table { display:block;overflow-x:auto;-webkit-overflow-scrolling:touch; }
+}
+</style>
 <div class="page" x-data="{
     tab: 'employees',
     showEmpModal: false,
@@ -392,7 +401,7 @@
                             </td>
                             <td>
                                 <div style="display:flex;gap:6px;">
-                                    <button class="btn btn-outline btn-sm"
+                                    <button class="icon-btn" title="Edit employee"
                                         @click="editEmp = {
                                             id: {{ $emp->id }},
                                             name: '{{ addslashes($emp->name) }}',
@@ -402,13 +411,15 @@
                                             days_allowed: {{ $emp->days_allowed }},
                                             color: '{{ $emp->color }}'
                                         }; editEmpColor = '{{ $emp->color }}'; showEditEmpModal = true">
-                                        Edit
+                                        <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     </button>
                                     @if($emp->id !== Auth::id())
                                         <form method="POST" action="{{ route('settings.employees.remove', $emp) }}"
                                             onsubmit="return confirm('Remove {{ $emp->name }}? Their leave history will also be deleted.')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-outline btn-sm" style="color:#999;">Remove</button>
+                                            <button type="submit" class="icon-btn danger" title="Remove employee">
+                                                <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                            </button>
                                         </form>
                                     @endif
                                 </div>
@@ -471,7 +482,7 @@
                                 </td>
                                 <td>
                                     <div style="display:flex;gap:6px;">
-                                        <button class="btn btn-outline btn-sm"
+                                        <button class="icon-btn" title="Edit leave type"
                                             @click="editLT = {
                                                 id: {{ $lt->id }},
                                                 name: '{{ addslashes($lt->name) }}',
@@ -479,12 +490,14 @@
                                                 counts_toward_allowance: {{ $lt->counts_toward_allowance ? 'true' : 'false' }},
                                                 is_active: {{ $lt->is_active ? 'true' : 'false' }}
                                             }; showEditLTModal = true">
-                                            Edit
+                                            <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         </button>
                                         <form method="POST" action="{{ route('settings.leave-types.remove', $lt) }}"
                                             onsubmit="return confirm('Remove leave type {{ $lt->name }}?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-outline btn-sm" style="color:#999;">✕</button>
+                                            <button type="submit" class="icon-btn danger" title="Remove leave type">
+                                                <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                            </button>
                                         </form>
                                     </div>
                                 </td>
@@ -548,18 +561,20 @@
                                 </td>
                                 <td>
                                     <div style="display:flex;gap:6px;">
-                                        <button class="btn btn-outline btn-sm"
+                                        <button class="icon-btn" title="Edit members"
                                             @click="editDept = {
                                                 id: {{ $dept->id }},
                                                 name: '{{ addslashes($dept->name) }}',
                                                 member_ids: [{{ $dept->users->pluck('id')->join(',') }}]
                                             }; showEditDeptModal = true">
-                                            Edit members
+                                            <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                         </button>
                                         <form method="POST" action="{{ route('settings.departments.remove', $dept) }}"
                                             onsubmit="return confirm('Remove {{ $dept->name }} department?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-outline btn-sm" style="color:#999;">✕</button>
+                                            <button type="submit" class="icon-btn danger" title="Remove department">
+                                                <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                            </button>
                                         </form>
                                     </div>
                                 </td>
@@ -601,7 +616,9 @@
                             <span class="badge badge-bank">Public holiday</span>
                             <form method="POST" action="{{ route('settings.bank-holidays.remove', $bh) }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-outline btn-sm" style="color:#999;">✕</button>
+                                <button type="submit" class="icon-btn danger" title="Remove">
+                                <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            </button>
                             </form>
                         </div>
                     </div>
@@ -618,7 +635,9 @@
                         </div>
                         <form method="POST" action="{{ route('settings.bank-holidays.remove', $bh) }}">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-outline btn-sm" style="color:#999;">✕</button>
+                            <button type="submit" class="icon-btn danger" title="Remove">
+                                <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            </button>
                         </form>
                     </div>
                 @endforeach
