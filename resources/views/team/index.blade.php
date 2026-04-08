@@ -26,6 +26,9 @@
 .ov-card { background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:1rem 1.25rem; }
 .prow { display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ee; }
 .prow:last-child { border-bottom:none; }
+@media (max-width: 768px) {
+  .team-notices-grid { grid-template-columns: 1fr !important; }
+}
 </style>
 
 <div class="page" x-data="teamOverview()">
