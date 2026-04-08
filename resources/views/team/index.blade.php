@@ -161,7 +161,7 @@
                                     </span>
                                     <span x-show="!p.signed_in" style="font-size:11px;color:#ccc;white-space:nowrap;">Not signed in</span>
                                 </div>
-                                <div x-show="p.status !== 'holiday'" style="display:flex;gap:4px;flex-shrink:0;">
+                                <div x-show="p.status !== 'holiday'" style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
                                     <button @click="setLocation(p.id, 'office')"
                                             :style="p.status==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
                                         Office
