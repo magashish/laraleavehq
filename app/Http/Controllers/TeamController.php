@@ -190,6 +190,10 @@ class TeamController extends Controller
         );
 
         if ($leave) {
+            if ($leave->is_short_leave) {
+                $part = $leave->short_leave_part;
+                return $part ? "medical-{$part}" : 'medical';
+            }
             return str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick') ? 'sick' : 'leave';
         }
 

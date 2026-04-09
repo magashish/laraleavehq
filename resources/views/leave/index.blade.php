@@ -93,14 +93,29 @@
                     </template>
 
                     <template x-if="isShortLeave">
-                        <div class="form-row">
+                        <div>
                             <div class="form-group">
-                                <label class="form-label">From</label>
-                                <input type="time" name="short_leave_from" class="form-input" x-model="shortLeaveFrom" required>
+                                <label class="form-label">Which half?</label>
+                                <div style="display:flex;gap:16px;margin-top:4px;">
+                                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="radio" name="short_leave_part" value="morning" x-model="shortLeavePart">
+                                        First half (AM)
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="radio" name="short_leave_part" value="afternoon" x-model="shortLeavePart">
+                                        Second half (PM)
+                                    </label>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">To</label>
-                                <input type="time" name="short_leave_to" class="form-input" x-model="shortLeaveTo" required>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">From</label>
+                                    <input type="time" name="short_leave_from" class="form-input" x-model="shortLeaveFrom" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">To</label>
+                                    <input type="time" name="short_leave_to" class="form-input" x-model="shortLeaveTo" required>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -112,7 +127,9 @@
                     </template>
                     <template x-if="isShortLeave && shortLeaveFrom && shortLeaveTo">
                         <div class="days-info">
-                            Short leave <strong x-text="shortLeaveFrom + ' – ' + shortLeaveTo"></strong> &mdash; no days deducted
+                            Medical appt
+                            <template x-if="shortLeavePart"><strong x-text="shortLeavePart === 'morning' ? '(AM)' : '(PM)'"></strong></template>
+                            <strong x-text="shortLeaveFrom + ' – ' + shortLeaveTo"></strong> &mdash; no days deducted
                         </div>
                     </template>
 
@@ -215,7 +232,10 @@
                             <td style="font-size:12px;" x-text="l.is_short_leave ? fmt(l.start_date) : l.is_half_day ? fmt(l.start_date) + ' (' + l.half_day_part + ')' : fmt(l.start_date) + ' — ' + fmt(l.end_date)"></td>
                             <td>
                                 <template x-if="l.is_short_leave">
-                                    <span style="font-size:11px;color:#555;" x-text="l.short_leave_from + ' – ' + l.short_leave_to"></span>
+                                    <div>
+                                        <div style="font-size:11px;color:#7a4800;font-weight:500;" x-text="l.short_leave_part === 'morning' ? 'AM' : l.short_leave_part === 'afternoon' ? 'PM' : ''"></div>
+                                        <div style="font-size:11px;color:#555;" x-text="l.short_leave_from + ' – ' + l.short_leave_to"></div>
+                                    </div>
                                 </template>
                                 <template x-if="!l.is_short_leave">
                                     <strong x-text="l.days"></strong>
@@ -284,6 +304,7 @@ function leavePage() {
         isShortLeave: false,
         shortLeaveFrom: '',
         shortLeaveTo: '',
+        shortLeavePart: '',
         workingDays: 0,
         selectedEmployee: '',
         adminOverride: false,
@@ -319,6 +340,7 @@ function leavePage() {
 
         onShortLeaveChange() {
             if (this.isShortLeave) { this.isHalfDay = false; this.endDate = this.startDate; }
+            else { this.shortLeavePart = ''; this.shortLeaveFrom = ''; this.shortLeaveTo = ''; }
             this.recalc();
         },
 

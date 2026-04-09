@@ -17,6 +17,7 @@ class LeaveRequest extends Model
         'is_short_leave',
         'short_leave_from',
         'short_leave_to',
+        'short_leave_part',
         'reason',
         'status',
         'approved_by_id',

@@ -11,13 +11,16 @@
 .p-si  { background:#fde8e8;color:#a02020; }
 .p-off { background:#f0f0ee;color:#999; }
 .p-hol { background:#ede9fe;color:#5b21b6; }
+.p-med { background:#fff0d0;color:#7a4800; }
 .day-cell { width:32px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
 .dc-in   { background:#ddeeff; }  .dc-re  { background:#d8f5ec; }
 .dc-le   { background:#efefed; }  .dc-si  { background:#fde8e8; }
 .dc-off  { background:#f5f5f3; }  .dc-hol { background:#ede9fe; }
+.dc-med  { background:#fff0d0; }
 .dcl-in  { color:#1558a0; }       .dcl-re { color:#0d6648; }
 .dcl-le  { color:#555; }          .dcl-si { color:#a02020; }
 .dcl-off { color:#bbb; }          .dcl-hol { color:#5b21b6; }
+.dcl-med { color:#7a4800; }
 .today-col { outline:1.5px solid #3a8ddd;border-radius:6px; }
 .nb-warn { background:#fff0d8;color:#7a4800; }
 .nb-info { background:#ddeeff;color:#1558a0; }
@@ -98,6 +101,11 @@
                     <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="seg.sick"></span>
                 </div>
             </template>
+            <template x-if="seg.medical>0">
+                <div :style="'width:'+pct(seg.medical)+'%;background:#e8a020;display:flex;align-items:center;justify-content:center;'">
+                    <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="seg.medical"></span>
+                </div>
+            </template>
             <template x-if="seg.holiday>0">
                 <div :style="'width:'+pct(seg.holiday)+'%;background:#a78bfa;display:flex;align-items:center;justify-content:center;'">
                     <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="seg.holiday"></span>
@@ -113,6 +121,7 @@
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#3a7dcc;display:inline-block;"></span>In office</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#1d9e75;display:inline-block;"></span>Remote</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#b4b2a9;display:inline-block;"></span>On leave</span>
+            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e8a020;display:inline-block;"></span>Medical</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>Sick</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#a78bfa;display:inline-block;"></span>Public holiday</span>
             <template x-if="view==='today'">
@@ -138,6 +147,7 @@
                         <button class="fbtn" :class="filter==='remote'?'on':''"  @click="filter='remote'">Remote</button>
                         <button class="fbtn" :class="filter==='leave'?'on':''"   @click="filter='leave'">On leave</button>
                         <button class="fbtn" :class="filter==='sick'?'on':''"    @click="filter='sick'">Sick</button>
+                        <button class="fbtn" :class="filter==='medical'?'on':''" @click="filter='medical'">Medical</button>
                         <button class="fbtn" :class="filter==='holiday'?'on':''" @click="filter='holiday'">Public holiday</button>
                     </div>
                 </template>
@@ -221,6 +231,7 @@
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ddeeff;border:1px solid #b5d4f4;display:inline-block;"></span>In</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#d8f5ec;border:1px solid #9fe1cb;display:inline-block;"></span>WFH</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#efefed;border:1px solid #d3d1c7;display:inline-block;"></span>Leave</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fff0d0;border:1px solid #e8c97a;display:inline-block;"></span>Medical</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fde8e8;border:1px solid #f7c1c1;display:inline-block;"></span>Sick</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ede9fe;border:1px solid #c4b5fd;display:inline-block;"></span>Holiday</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#f5f5f3;border:1px solid #e0e0e0;display:inline-block;"></span>—</span>
@@ -440,6 +451,7 @@
                     <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ddeeff;border:1px solid #b5d4f4;display:inline-block;"></span>In</span>
                     <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#d8f5ec;border:1px solid #9fe1cb;display:inline-block;"></span>WFH</span>
                     <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#efefed;border:1px solid #d3d1c7;display:inline-block;"></span>Leave</span>
+                    <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fff0d0;border:1px solid #e8c97a;display:inline-block;"></span>Medical</span>
                     <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fde8e8;border:1px solid #f7c1c1;display:inline-block;"></span>Sick</span>
                     <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ede9fe;border:1px solid #c4b5fd;display:inline-block;"></span>Holiday</span>
                     <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#f5f5f3;border:1px solid #e0e0e0;display:inline-block;"></span>Weekend</span>
@@ -533,11 +545,14 @@ function teamOverview() {
         },
 
         get seg() {
-            const c = {office:0, remote:0, leave:0, sick:0, holiday:0, unknown:0};
+            const c = {office:0, remote:0, leave:0, sick:0, holiday:0, medical:0, unknown:0};
+            const bump = (s) => {
+                if (s.startsWith('medical')) { c.medical++; } else { c[s] = (c[s] ?? 0) + 1; }
+            };
             if (this.view === 'today') {
-                this.teamData.forEach(p => { c[p.status] = (c[p.status] ?? 0) + 1; });
+                this.teamData.forEach(p => bump(p.status));
             } else if (this.view === 'week') {
-                this.teamData.forEach(p => p.week.forEach(s => { c[s] = (c[s] ?? 0) + 1; }));
+                this.teamData.forEach(p => p.week.forEach(s => bump(s)));
             } else {
                 this.teamData.forEach(p => {
                     c.office += p.month.office || 0;
@@ -584,16 +599,34 @@ function teamOverview() {
 
         get filteredPeople() {
             if (this.filter === 'all') return this.teamData;
+            if (this.filter === 'medical') return this.teamData.filter(p => p.status.startsWith('medical'));
             return this.teamData.filter(p => p.status === this.filter);
         },
 
         statusLabel(s) {
+            if (s === 'medical-morning')   return 'Medical (AM)';
+            if (s === 'medical-afternoon') return 'Medical (PM)';
+            if (s === 'medical')           return 'Medical appt';
             return {office:'In office',remote:'Remote',leave:'On leave',sick:'Sick',holiday:'Public holiday',unknown:'Not set'}[s] || s;
         },
-        pillCls(s)    { return ({office:'pill p-in',remote:'pill p-re',leave:'pill p-le',sick:'pill p-si',holiday:'pill p-hol',unknown:'pill p-off'}[s]||'pill p-off'); },
-        dayCellCls(s) { return ({office:'dc-in',remote:'dc-re',leave:'dc-le',sick:'dc-si',holiday:'dc-hol',unknown:'dc-off'}[s]||'dc-off'); },
-        dayLblCls(s)  { return ({office:'dcl-in',remote:'dcl-re',leave:'dcl-le',sick:'dcl-si',holiday:'dcl-hol',unknown:'dcl-off'}[s]||'dcl-off'); },
-        dayLbl(s)     { return ({office:'In',remote:'WFH',leave:'Lv',sick:'Sick',holiday:'PH',unknown:'—'}[s]||'—'); },
+        pillCls(s) {
+            if (s.startsWith('medical')) return 'pill p-med';
+            return ({office:'pill p-in',remote:'pill p-re',leave:'pill p-le',sick:'pill p-si',holiday:'pill p-hol',unknown:'pill p-off'}[s]||'pill p-off');
+        },
+        dayCellCls(s) {
+            if (s.startsWith('medical')) return 'dc-med';
+            return ({office:'dc-in',remote:'dc-re',leave:'dc-le',sick:'dc-si',holiday:'dc-hol',unknown:'dc-off'}[s]||'dc-off');
+        },
+        dayLblCls(s) {
+            if (s.startsWith('medical')) return 'dcl-med';
+            return ({office:'dcl-in',remote:'dcl-re',leave:'dcl-le',sick:'dcl-si',holiday:'dcl-hol',unknown:'dcl-off'}[s]||'dcl-off');
+        },
+        dayLbl(s) {
+            if (s === 'medical-morning')   return 'M·AM';
+            if (s === 'medical-afternoon') return 'M·PM';
+            if (s === 'medical')           return 'M';
+            return ({office:'In',remote:'WFH',leave:'Lv',sick:'Sick',holiday:'PH',unknown:'—'}[s]||'—');
+        },
     };
 }
 </script>

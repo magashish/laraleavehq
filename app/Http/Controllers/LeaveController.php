@@ -48,6 +48,7 @@ class LeaveController extends Controller
             'is_short_leave'   => $l->is_short_leave,
             'short_leave_from' => $l->short_leave_from,
             'short_leave_to'   => $l->short_leave_to,
+            'short_leave_part' => $l->short_leave_part,
             'reason'        => $l->reason,
             'status'        => $l->status,
             'leave_type' => $l->leaveType ? [
@@ -80,6 +81,7 @@ class LeaveController extends Controller
             'is_short_leave'   => 'boolean',
             'short_leave_from' => 'nullable|date_format:H:i',
             'short_leave_to'   => 'nullable|date_format:H:i|after:short_leave_from',
+            'short_leave_part' => 'nullable|in:morning,afternoon',
             'reason'           => 'nullable|string|max:500',
             'admin_override'   => 'boolean',
         ]);
@@ -168,6 +170,7 @@ class LeaveController extends Controller
             'is_short_leave'   => $isShortLeave,
             'short_leave_from' => $isShortLeave ? $validated['short_leave_from'] : null,
             'short_leave_to'   => $isShortLeave ? $validated['short_leave_to'] : null,
+            'short_leave_part' => $isShortLeave ? ($validated['short_leave_part'] ?? null) : null,
             'reason'           => $validated['reason'] ?? '',
             'status'           => $isManager ? 'approved' : 'pending',
             'approved_by_id'   => $isManager ? $user->id : null,
