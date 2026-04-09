@@ -221,7 +221,7 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <template x-for="(s,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[dayCellCls(s), di===todayIdx ? 'today-col' : '']">
+                                    <div class="day-cell" :class="[dayCellCls(s), di===todayIdx ? 'today-col' : '']" :title="dayTitle(s)">
                                         <span style="font-size:9px;font-weight:500;" :class="dayLblCls(s)" x-text="dayLbl(s)"></span>
                                     </div>
                                 </template>
@@ -436,7 +436,7 @@
                                 {{-- Day cells --}}
                                 <template x-for="(s, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div class="day-cell" :class="dayCellCls(s)">
+                                        <div class="day-cell" :class="dayCellCls(s)" :title="dayTitle(s)">
                                             <span style="font-size:9px;font-weight:500;" :class="dayLblCls(s)" x-text="dayLbl(s)"></span>
                                         </div>
                                     </td>
@@ -627,6 +627,7 @@ function teamOverview() {
             if (s === 'medical')           return 'M';
             return ({office:'In',remote:'WFH',leave:'Lv',sick:'Sick',holiday:'PH',unknown:'—'}[s]||'—');
         },
+        dayTitle(s) { return this.statusLabel(s); },
     };
 }
 </script>
