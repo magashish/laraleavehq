@@ -43,8 +43,11 @@ class LeaveController extends Controller
             'start_date'    => $l->start_date->toDateString(),
             'end_date'      => $l->end_date->toDateString(),
             'days'          => $l->days,
-            'is_half_day'   => $l->is_half_day,
-            'half_day_part' => $l->half_day_part,
+            'is_half_day'      => $l->is_half_day,
+            'half_day_part'    => $l->half_day_part,
+            'is_short_leave'   => $l->is_short_leave,
+            'short_leave_from' => $l->short_leave_from,
+            'short_leave_to'   => $l->short_leave_to,
             'reason'        => $l->reason,
             'status'        => $l->status,
             'leave_type' => $l->leaveType ? [
@@ -68,24 +71,34 @@ class LeaveController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'employee_id'   => 'required|exists:users,id',
-            'leave_type_id' => 'nullable|exists:leave_types,id',
-            'start_date'    => 'required|date',
-            'end_date'      => 'required|date|after_or_equal:start_date',
-            'is_half_day'   => 'boolean',
-            'half_day_part' => 'nullable|in:morning,afternoon',
-            'reason'        => 'nullable|string|max:500',
-            'admin_override' => 'boolean',
+            'employee_id'      => 'required|exists:users,id',
+            'leave_type_id'    => 'nullable|exists:leave_types,id',
+            'start_date'       => 'required|date',
+            'end_date'         => 'required|date|after_or_equal:start_date',
+            'is_half_day'      => 'boolean',
+            'half_day_part'    => 'nullable|in:morning,afternoon',
+            'is_short_leave'   => 'boolean',
+            'short_leave_from' => 'nullable|date_format:H:i',
+            'short_leave_to'   => 'nullable|date_format:H:i|after:short_leave_from',
+            'reason'           => 'nullable|string|max:500',
+            'admin_override'   => 'boolean',
         ]);
 
-        $isHalfDay = $request->boolean('is_half_day');
+        $isHalfDay    = $request->boolean('is_half_day');
+        $isShortLeave = $request->boolean('is_short_leave');
 
         if ($isHalfDay) {
             if ($validated['start_date'] !== $validated['end_date']) {
-                return back()->withErrors(['start_date' => 'Half-day leave must be a single day (start and end date must match).'])->withInput();
+                return back()->withErrors(['start_date' => 'Half-day leave must be a single day.'])->withInput();
             }
             if (empty($validated['half_day_part'])) {
-                return back()->withErrors(['start_date' => 'Please select morning or afternoon for a half-day leave.'])->withInput();
+                return back()->withErrors(['start_date' => 'Please select morning or afternoon.'])->withInput();
+            }
+        }
+
+        if ($isShortLeave) {
+            if (empty($validated['short_leave_from']) || empty($validated['short_leave_to'])) {
+                return back()->withErrors(['start_date' => 'Please enter start and end time for short leave.'])->withInput();
             }
         }
 
@@ -98,7 +111,9 @@ class LeaveController extends Controller
             ->map(fn($d) => $d->toDateString())
             ->toArray();
 
-        if ($isHalfDay) {
+        if ($isShortLeave) {
+            $days = 0; // no deduction
+        } elseif ($isHalfDay) {
             $fullDays = $this->countWorkingDays($validated['start_date'], $validated['start_date'], $bankHolidayDates);
             if ($fullDays <= 0) {
                 return back()->withErrors(['start_date' => 'The selected date is not a working day.'])->withInput();
@@ -113,8 +128,8 @@ class LeaveController extends Controller
 
         $employee = User::findOrFail($validated['employee_id']);
 
-        // Check holiday allowance (not applicable for contractors/interns)
-        if ($employee->hasHolidayAllowance()) {
+        // Short leave never counts toward allowance
+        if (!$isShortLeave && $employee->hasHolidayAllowance()) {
             $leaveType = $validated['leave_type_id']
                 ? LeaveType::find($validated['leave_type_id'])
                 : null;
@@ -143,18 +158,21 @@ class LeaveController extends Controller
         $isManager = $user->isManager();
 
         $leave = LeaveRequest::create([
-            'employee_id'    => $validated['employee_id'],
-            'leave_type_id'  => $validated['leave_type_id'] ?? null,
-            'start_date'     => $validated['start_date'],
-            'end_date'       => $isHalfDay ? $validated['start_date'] : $validated['end_date'],
-            'days'           => $days,
-            'is_half_day'    => $isHalfDay,
-            'half_day_part'  => $isHalfDay ? $validated['half_day_part'] : null,
-            'reason'         => $validated['reason'] ?? '',
-            'status'         => $isManager ? 'approved' : 'pending',
-            'approved_by_id' => $isManager ? $user->id : null,
-            'approved_at'    => $isManager ? now() : null,
-            'admin_override' => $adminOverride,
+            'employee_id'      => $validated['employee_id'],
+            'leave_type_id'    => $validated['leave_type_id'] ?? null,
+            'start_date'       => $validated['start_date'],
+            'end_date'         => ($isHalfDay || $isShortLeave) ? $validated['start_date'] : $validated['end_date'],
+            'days'             => $days,
+            'is_half_day'      => $isHalfDay,
+            'half_day_part'    => $isHalfDay ? $validated['half_day_part'] : null,
+            'is_short_leave'   => $isShortLeave,
+            'short_leave_from' => $isShortLeave ? $validated['short_leave_from'] : null,
+            'short_leave_to'   => $isShortLeave ? $validated['short_leave_to'] : null,
+            'reason'           => $validated['reason'] ?? '',
+            'status'           => $isManager ? 'approved' : 'pending',
+            'approved_by_id'   => $isManager ? $user->id : null,
+            'approved_at'      => $isManager ? now() : null,
+            'admin_override'   => $adminOverride,
         ]);
 
         $leave->load(['employee', 'leaveType', 'approvedBy']);

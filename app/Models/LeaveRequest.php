@@ -14,6 +14,9 @@ class LeaveRequest extends Model
         'days',
         'is_half_day',
         'half_day_part',
+        'is_short_leave',
+        'short_leave_from',
+        'short_leave_to',
         'reason',
         'status',
         'approved_by_id',
@@ -22,12 +25,13 @@ class LeaveRequest extends Model
     ];
 
     protected $casts = [
-        'start_date'     => 'date',
-        'end_date'       => 'date',
-        'approved_at'    => 'datetime',
-        'admin_override' => 'boolean',
-        'is_half_day'    => 'boolean',
-        'days'           => 'float',
+        'start_date'      => 'date',
+        'end_date'        => 'date',
+        'approved_at'     => 'datetime',
+        'admin_override'  => 'boolean',
+        'is_half_day'     => 'boolean',
+        'is_short_leave'  => 'boolean',
+        'days'            => 'float',
     ];
 
     public function employee()

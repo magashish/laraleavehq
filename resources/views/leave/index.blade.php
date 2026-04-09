@@ -50,19 +50,27 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-check">
-                            <input type="checkbox" name="is_half_day" value="1" x-model="isHalfDay" @change="onHalfDayChange()">
-                            <strong>Half day</strong>
-                        </label>
+                    <div style="display:flex;gap:16px;margin-bottom:8px;">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-check">
+                                <input type="checkbox" name="is_half_day" value="1" x-model="isHalfDay" @change="onHalfDayChange()">
+                                <strong>Half day</strong>
+                            </label>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-check">
+                                <input type="checkbox" name="is_short_leave" value="1" x-model="isShortLeave" @change="onShortLeaveChange()">
+                                <strong>Short leave</strong> <span style="font-size:11px;color:#aaa;font-weight:400;">(hours only, no deduction)</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Start date</label>
-                            <input type="date" name="start_date" class="form-input" x-model="startDate" @change="if(isHalfDay) endDate = startDate; recalc()" required>
+                            <label class="form-label">Date</label>
+                            <input type="date" name="start_date" class="form-input" x-model="startDate" @change="if(isHalfDay) endDate = startDate; if(isShortLeave) endDate = startDate; recalc()" required>
                         </div>
-                        <div class="form-group" x-show="!isHalfDay">
+                        <div class="form-group" x-show="!isHalfDay && !isShortLeave">
                             <label class="form-label">End date</label>
                             <input type="date" name="end_date" class="form-input" x-model="endDate" @change="recalc()" required>
                         </div>
@@ -84,9 +92,27 @@
                         </div>
                     </template>
 
-                    <template x-if="workingDays > 0">
+                    <template x-if="isShortLeave">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">From</label>
+                                <input type="time" name="short_leave_from" class="form-input" x-model="shortLeaveFrom" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">To</label>
+                                <input type="time" name="short_leave_to" class="form-input" x-model="shortLeaveTo" required>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="workingDays > 0 && !isShortLeave">
                         <div class="days-info">
                             <strong x-text="workingDays"></strong> working day(s) &mdash; weekends &amp; public holidays excluded
+                        </div>
+                    </template>
+                    <template x-if="isShortLeave && shortLeaveFrom && shortLeaveTo">
+                        <div class="days-info">
+                            Short leave <strong x-text="shortLeaveFrom + ' – ' + shortLeaveTo"></strong> &mdash; no days deducted
                         </div>
                     </template>
 
@@ -186,8 +212,15 @@
                                     <span style="font-size:12px;color:#bbb;">—</span>
                                 </template>
                             </td>
-                            <td style="font-size:12px;" x-text="l.is_half_day ? fmt(l.start_date) + ' (' + l.half_day_part + ')' : fmt(l.start_date) + ' — ' + fmt(l.end_date)"></td>
-                            <td><strong x-text="l.days"></strong></td>
+                            <td style="font-size:12px;" x-text="l.is_short_leave ? fmt(l.start_date) : l.is_half_day ? fmt(l.start_date) + ' (' + l.half_day_part + ')' : fmt(l.start_date) + ' — ' + fmt(l.end_date)"></td>
+                            <td>
+                                <template x-if="l.is_short_leave">
+                                    <span style="font-size:11px;color:#555;" x-text="l.short_leave_from + ' – ' + l.short_leave_to"></span>
+                                </template>
+                                <template x-if="!l.is_short_leave">
+                                    <strong x-text="l.days"></strong>
+                                </template>
+                            </td>
                             <td style="color:#555;font-size:12px;" x-text="l.reason || '—'"></td>
                             <td><span class="badge" :class="'badge-' + l.status" x-text="l.status"></span></td>
                             <td>
@@ -248,6 +281,9 @@ function leavePage() {
         endDate: '',
         isHalfDay: false,
         halfDayPart: 'morning',
+        isShortLeave: false,
+        shortLeaveFrom: '',
+        shortLeaveTo: '',
         workingDays: 0,
         selectedEmployee: '',
         adminOverride: false,
@@ -277,7 +313,12 @@ function leavePage() {
         },
 
         onHalfDayChange() {
-            if (this.isHalfDay) this.endDate = this.startDate;
+            if (this.isHalfDay) { this.isShortLeave = false; this.endDate = this.startDate; }
+            this.recalc();
+        },
+
+        onShortLeaveChange() {
+            if (this.isShortLeave) { this.isHalfDay = false; this.endDate = this.startDate; }
             this.recalc();
         },
 
