@@ -14,7 +14,7 @@ class CheckinController extends Controller
     {
         // Admin setting persistent work_location for another employee (team page buttons)
         if ($request->has('user_id') && Auth::user()->isManager()) {
-            $request->validate(['user_id' => 'required|exists:users,id', 'status' => 'required|in:office,remote']);
+            $request->validate(['user_id' => 'required|exists:users,id', 'status' => 'required|in:office,remote,wfh']);
             User::where('id', $request->user_id)->update(['work_location' => $request->status]);
             return response()->json(['ok' => true]);
         }

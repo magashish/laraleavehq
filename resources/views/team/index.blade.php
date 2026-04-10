@@ -12,15 +12,16 @@
 .p-off { background:#f0f0ee;color:#999; }
 .p-hol { background:#ede9fe;color:#5b21b6; }
 .p-med { background:#fff0d0;color:#7a4800; }
+.p-wfh { background:#d8f5ec;color:#0d6648; }
 .day-cell { width:32px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-.dc-in   { background:#ddeeff; }  .dc-re  { background:#d8f5ec; }
+.dc-in   { background:#ddeeff; }  .dc-re  { background:#c6ede0; }
 .dc-le   { background:#efefed; }  .dc-si  { background:#fde8e8; }
 .dc-off  { background:#f5f5f3; }  .dc-hol { background:#ede9fe; }
-.dc-med  { background:#fff0d0; }
+.dc-med  { background:#fff0d0; }  .dc-wfh { background:#d8f5ec; }
 .dcl-in  { color:#1558a0; }       .dcl-re { color:#0d6648; }
 .dcl-le  { color:#555; }          .dcl-si { color:#a02020; }
 .dcl-off { color:#bbb; }          .dcl-hol { color:#5b21b6; }
-.dcl-med { color:#7a4800; }
+.dcl-med { color:#7a4800; }       .dcl-wfh { color:#0d6648; }
 .today-col { outline:1.5px solid #3a8ddd;border-radius:6px; }
 .nb-warn { background:#fff0d8;color:#7a4800; }
 .nb-info { background:#ddeeff;color:#1558a0; }
@@ -86,8 +87,13 @@
                 </div>
             </template>
             <template x-if="seg.remote>0">
-                <div :style="'width:'+pct(seg.remote)+'%;background:#1d9e75;display:flex;align-items:center;justify-content:center;'">
+                <div :style="'width:'+pct(seg.remote)+'%;background:#0d7a55;display:flex;align-items:center;justify-content:center;'">
                     <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="seg.remote"></span>
+                </div>
+            </template>
+            <template x-if="seg.wfh>0">
+                <div :style="'width:'+pct(seg.wfh)+'%;background:#1d9e75;display:flex;align-items:center;justify-content:center;'">
+                    <span style="font-size:10px;font-weight:600;color:#fff;padding:0 5px;" x-text="seg.wfh"></span>
                 </div>
             </template>
             <template x-if="seg.leave>0">
@@ -118,7 +124,8 @@
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;">
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#3a7dcc;display:inline-block;"></span>In office</span>
-            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#1d9e75;display:inline-block;"></span>Remote</span>
+            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#0d7a55;display:inline-block;"></span>Remote</span>
+            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#1d9e75;display:inline-block;"></span>WFH</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#b4b2a9;display:inline-block;"></span>On leave</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e8a020;display:inline-block;"></span>Medical</span>
             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>Sick</span>
@@ -144,6 +151,7 @@
                         <button class="fbtn" :class="filter==='all'?'on':''"     @click="filter='all'">All</button>
                         <button class="fbtn" :class="filter==='office'?'on':''"  @click="filter='office'">In office</button>
                         <button class="fbtn" :class="filter==='remote'?'on':''"  @click="filter='remote'">Remote</button>
+                        <button class="fbtn" :class="filter==='wfh'?'on':''"     @click="filter='wfh'">WFH</button>
                         <button class="fbtn" :class="filter==='leave'?'on':''"   @click="filter='leave'">On leave</button>
                         <button class="fbtn" :class="filter==='sick'?'on':''"    @click="filter='sick'">Sick</button>
                         <button class="fbtn" :class="filter==='medical'?'on':''" @click="filter='medical'">Medical</button>
@@ -175,6 +183,17 @@
                                         ✓ <span x-text="p.time"></span>
                                     </span>
                                     <span x-show="!p.signed_in" style="font-size:11px;color:#ccc;white-space:nowrap;">Not signed in</span>
+                                </div>
+                                {{-- In/WFH toggle only for office-based employees, not permanent remote --}}
+                                <div x-show="p.location !== 'remote'" class="prow-location" style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
+                                    <button @click="setLocation(p.id, 'office')"
+                                            :style="p.location==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
+                                        In
+                                    </button>
+                                    <button @click="setLocation(p.id, 'wfh')"
+                                            :style="p.location==='wfh' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #1d9e75;background:#1d9e75;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
+                                        WFH
+                                    </button>
                                 </div>
                                 </div>{{-- end prow-meta --}}
                             </div>
@@ -218,6 +237,7 @@
                         </template>
                         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ddeeff;border:1px solid #b5d4f4;display:inline-block;"></span>In</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#c6ede0;border:1px solid #7acbab;display:inline-block;"></span>Re</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#d8f5ec;border:1px solid #9fe1cb;display:inline-block;"></span>WFH</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#efefed;border:1px solid #d3d1c7;display:inline-block;"></span>Leave</span>
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fff0d0;border:1px solid #e8c97a;display:inline-block;"></span>Medical</span>
@@ -534,7 +554,7 @@ function teamOverview() {
         },
 
         get seg() {
-            const c = {office:0, remote:0, leave:0, sick:0, holiday:0, medical:0, unknown:0};
+            const c = {office:0, remote:0, wfh:0, leave:0, sick:0, holiday:0, medical:0, unknown:0};
             const bump = (s) => {
                 if (s.startsWith('medical')) { c.medical++; } else { c[s] = (c[s] ?? 0) + 1; }
             };
@@ -596,25 +616,25 @@ function teamOverview() {
             if (s === 'medical-morning')   return 'Medical (AM)';
             if (s === 'medical-afternoon') return 'Medical (PM)';
             if (s === 'medical')           return 'Medical appt';
-            return {office:'In office',remote:'Remote',leave:'On leave',sick:'Sick',holiday:'Public holiday',unknown:'Not set'}[s] || s;
+            return {office:'In office',remote:'Remote',wfh:'WFH',leave:'On leave',sick:'Sick',holiday:'Public holiday',unknown:'Not set'}[s] || s;
         },
         pillCls(s) {
             if (s.startsWith('medical')) return 'pill p-med';
-            return ({office:'pill p-in',remote:'pill p-re',leave:'pill p-le',sick:'pill p-si',holiday:'pill p-hol',unknown:'pill p-off'}[s]||'pill p-off');
+            return ({office:'pill p-in',remote:'pill p-re',wfh:'pill p-wfh',leave:'pill p-le',sick:'pill p-si',holiday:'pill p-hol',unknown:'pill p-off'}[s]||'pill p-off');
         },
         dayCellCls(s) {
             if (s.startsWith('medical')) return 'dc-med';
-            return ({office:'dc-in',remote:'dc-re',leave:'dc-le',sick:'dc-si',holiday:'dc-hol',unknown:'dc-off'}[s]||'dc-off');
+            return ({office:'dc-in',remote:'dc-re',wfh:'dc-wfh',leave:'dc-le',sick:'dc-si',holiday:'dc-hol',unknown:'dc-off'}[s]||'dc-off');
         },
         dayLblCls(s) {
             if (s.startsWith('medical')) return 'dcl-med';
-            return ({office:'dcl-in',remote:'dcl-re',leave:'dcl-le',sick:'dcl-si',holiday:'dcl-hol',unknown:'dcl-off'}[s]||'dcl-off');
+            return ({office:'dcl-in',remote:'dcl-re',wfh:'dcl-wfh',leave:'dcl-le',sick:'dcl-si',holiday:'dcl-hol',unknown:'dcl-off'}[s]||'dcl-off');
         },
         dayLbl(s) {
             if (s === 'medical-morning')   return 'M·AM';
             if (s === 'medical-afternoon') return 'M·PM';
             if (s === 'medical')           return 'M';
-            return ({office:'In',remote:'WFH',leave:'Lv',sick:'Sick',holiday:'PH',unknown:'—'}[s]||'—');
+            return ({office:'In',remote:'Re',wfh:'WFH',leave:'Lv',sick:'Sick',holiday:'PH',unknown:'—'}[s]||'—');
         },
         dayTitle(s) { return this.statusLabel(s); },
     };
