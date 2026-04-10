@@ -64,6 +64,13 @@
                             <label class="form-label">Annual leave days</label>
                             <input type="number" name="days_allowed" class="form-input" value="25" min="0" max="60" required>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <select name="work_location" class="form-select" required>
+                                <option value="office">In office (UK-based)</option>
+                                <option value="remote">Remote (permanent)</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Colour</label>
@@ -130,6 +137,13 @@
                         <div class="form-group">
                             <label class="form-label">Annual leave days</label>
                             <input type="number" name="days_allowed" class="form-input" :value="editEmp.days_allowed" min="0" max="60" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <select name="work_location" class="form-select" required>
+                                <option value="office" :selected="editEmp.work_location === 'office'">In office (UK-based)</option>
+                                <option value="remote" :selected="editEmp.work_location === 'remote'">Remote (permanent)</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group">
@@ -409,7 +423,8 @@
                                             role: '{{ addslashes($emp->role) }}',
                                             role_type: '{{ $emp->role_type }}',
                                             days_allowed: {{ $emp->days_allowed }},
-                                            color: '{{ $emp->color }}'
+                                            color: '{{ $emp->color }}',
+                                            work_location: '{{ $emp->work_location ?? 'office' }}'
                                         }; editEmpColor = '{{ $emp->color }}'; showEditEmpModal = true">
                                         <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     </button>

@@ -53,12 +53,13 @@ class SettingsController extends Controller
         $this->requireManager();
 
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email|unique:users',
-            'role'         => 'required|string|max:100',
-            'role_type'    => 'required|in:admin,manager,employee,contractor,intern',
-            'days_allowed' => 'required|integer|min:0|max:60',
-            'color'        => 'required|string|max:10',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users',
+            'role'          => 'required|string|max:100',
+            'role_type'     => 'required|in:admin,manager,employee,contractor,intern',
+            'days_allowed'  => 'required|integer|min:0|max:60',
+            'color'         => 'required|string|max:10',
+            'work_location' => 'required|in:office,remote',
         ]);
 
         // Restrict creating admins to admins only
@@ -67,14 +68,15 @@ class SettingsController extends Controller
         }
 
         $user = User::create([
-            'name'         => $validated['name'],
-            'email'        => $validated['email'],
-            'password'     => Hash::make('password123'),
-            'role'         => $validated['role'],
-            'role_type'    => $validated['role_type'],
-            'is_manager'   => in_array($validated['role_type'], ['admin', 'manager']),
-            'days_allowed' => $validated['days_allowed'],
-            'color'        => $validated['color'],
+            'name'          => $validated['name'],
+            'email'         => $validated['email'],
+            'password'      => Hash::make('password123'),
+            'role'          => $validated['role'],
+            'role_type'     => $validated['role_type'],
+            'is_manager'    => in_array($validated['role_type'], ['admin', 'manager']),
+            'days_allowed'  => $validated['days_allowed'],
+            'color'         => $validated['color'],
+            'work_location' => $validated['work_location'],
         ]);
 
         return back()->with('success', "{$user->name} added. Default password: password123");
@@ -86,12 +88,13 @@ class SettingsController extends Controller
 
         // Only admin can promote/demote to admin
         $rules = [
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email|unique:users,email,' . $user->id,
-            'role'         => 'required|string|max:100',
-            'role_type'    => 'required|in:admin,manager,employee,contractor,intern',
-            'days_allowed' => 'required|integer|min:0|max:60',
-            'color'        => 'required|string|max:10',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email,' . $user->id,
+            'role'          => 'required|string|max:100',
+            'role_type'     => 'required|in:admin,manager,employee,contractor,intern',
+            'days_allowed'  => 'required|integer|min:0|max:60',
+            'color'         => 'required|string|max:10',
+            'work_location' => 'required|in:office,remote',
         ];
 
         $validated = $request->validate($rules);
@@ -101,13 +104,14 @@ class SettingsController extends Controller
         }
 
         $user->update([
-            'name'         => $validated['name'],
-            'email'        => $validated['email'],
-            'role'         => $validated['role'],
-            'role_type'    => $validated['role_type'],
-            'is_manager'   => in_array($validated['role_type'], ['admin', 'manager']),
-            'days_allowed' => $validated['days_allowed'],
-            'color'        => $validated['color'],
+            'name'          => $validated['name'],
+            'email'         => $validated['email'],
+            'role'          => $validated['role'],
+            'role_type'     => $validated['role_type'],
+            'is_manager'    => in_array($validated['role_type'], ['admin', 'manager']),
+            'days_allowed'  => $validated['days_allowed'],
+            'color'         => $validated['color'],
+            'work_location' => $validated['work_location'],
         ]);
 
         return back()->with('success', "{$user->name} updated.");
