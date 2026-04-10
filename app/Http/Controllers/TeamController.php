@@ -45,14 +45,14 @@ class TeamController extends Controller
                 ->where('status', 'approved')
                 ->where('start_date', '<=', $monthEnd)
                 ->where('end_date', '>=', $monthStart),
-            'checkins' => fn($q) => $q->whereIn('date', array_merge([$today], $weekDates)),
+            'checkins' => fn($q) => $q->where('date', $today),
         ])->orderBy('name')->get();
 
         $dayOfWeek = now()->dayOfWeekIso; // 1=Mon … 7=Sun
         $todayIdx  = ($dayOfWeek >= 1 && $dayOfWeek <= 5) ? $dayOfWeek - 1 : null;
 
         $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd, $publicHolidays) {
-            $todayCheckin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $today);
+            $todayCheckin = $emp->checkins->first();
             $signedIn     = $todayCheckin && $todayCheckin->checked_in_at && !$todayCheckin->signed_out_at;
             return [
                 'id'         => $emp->id,
@@ -65,7 +65,7 @@ class TeamController extends Controller
                 'status'     => $this->getUserStatus($emp, $today, $publicHolidays),
                 'signed_in'  => $signedIn,
                 'time'       => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
-                'week'       => array_map(fn($d) => $this->getWeekDayStatus($emp, $d, $today, $publicHolidays), $weekDates),
+                'week'       => array_map(fn($d) => $this->getUserStatus($emp, $d, $publicHolidays), $weekDates),
                 'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd, $publicHolidays),
                 'monthGrid'  => $this->getMonthDayStatuses($emp, $monthStart, $monthEnd, $publicHolidays),
             ];
@@ -178,28 +178,6 @@ class TeamController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
-    /**
-     * Status for weekly grid: uses actual check-in for past days,
-     * falls back to work_location only for today and future days.
-     */
-    private function getWeekDayStatus(User $emp, string $date, string $today, array $publicHolidays = []): string
-    {
-        // Leave/holiday always takes priority
-        $status = $this->getUserStatus($emp, $date, $publicHolidays);
-        if (in_array($status, ['leave', 'sick', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
-            return $status;
-        }
-
-        // For past days, use actual check-in if available; otherwise unknown
-        if ($date < $today) {
-            $checkin = $emp->checkins->first(fn($c) => $c->date->toDateString() === $date);
-            return $checkin?->status ?? 'unknown';
-        }
-
-        // Today and future: use work_location (planned)
-        return $status;
-    }
 
     private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string
     {
