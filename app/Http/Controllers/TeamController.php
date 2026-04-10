@@ -254,10 +254,14 @@ class TeamController extends Controller
             $dateStr = $d->toDateString();
             if ($d->isWeekend()) {
                 $statuses[] = 'weekend';
-            } elseif ($dateStr > $today) {
-                $statuses[] = 'future';
             } else {
-                $statuses[] = $this->getUserStatus($emp, $dateStr, $publicHolidays);
+                $status = $this->getUserStatus($emp, $dateStr, $publicHolidays);
+                // Future days: show leave/holiday/medical if booked, otherwise blank
+                if ($dateStr > $today && !in_array($status, ['leave', 'sick', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
+                    $statuses[] = 'unknown';
+                } else {
+                    $statuses[] = $status;
+                }
             }
             $d->addDay();
         }
