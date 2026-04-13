@@ -25,6 +25,10 @@
 .today-col { outline:1.5px solid #3a8ddd;border-radius:6px; }
 .nb-warn { background:#fff0d8;color:#7a4800; }
 .nb-info { background:#ddeeff;color:#1558a0; }
+.has-tip { position:relative; }
+.has-tip::after { content:''; position:absolute; top:0; right:0; width:0; height:0; border-style:solid; border-width:0 7px 7px 0; border-color:transparent #e53e3e transparent transparent; border-top-right-radius:6px; pointer-events:none; }
+.cell-tip { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1a1a1a; color:#fff; font-size:11px; padding:5px 9px; border-radius:6px; white-space:nowrap; pointer-events:none; z-index:9999; box-shadow:0 2px 8px rgba(0,0,0,.25); }
+.cell-tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a1a1a; }
 .fbtn { font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid #e0e0e0;background:#f5f5f3;color:#888;cursor:pointer; }
 .fbtn.on { background:#fff;color:#1a1a1a;border-color:#aaa;font-weight:500; }
 .ov-card { background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:1rem 1.25rem; }
@@ -233,10 +237,11 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <template x-for="(cell,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[dayCellCls(cell.s), di===todayIdx ? 'today-col' : '']"
+                                    <div class="day-cell" :class="[dayCellCls(cell.s), di===todayIdx ? 'today-col' : '', cell.tip ? 'has-tip' : '']"
                                          :style="cell.c ? 'background:'+cell.c+'44' : ''"
-                                         :title="cell.tip || dayTitle(cell.s)">
+                                         x-data="{show:false}" @mouseenter="show=true" @mouseleave="show=false" style="position:relative;">
                                         <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
+                                        <div class="cell-tip" x-show="show" x-text="cell.tip || dayTitle(cell.s)"></div>
                                     </div>
                                 </template>
                             </div>
@@ -450,11 +455,12 @@
                                 </td>
                                 {{-- Day cells --}}
                                 <template x-for="(cell, i) in p.monthGrid" :key="i">
-                                    <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div class="day-cell" :class="dayCellCls(cell.s)"
+                                    <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;position:relative;">
+                                        <div class="day-cell" :class="[dayCellCls(cell.s), cell.tip ? 'has-tip' : '']"
                                              :style="cell.c ? 'background:'+cell.c+'44' : ''"
-                                             :title="cell.tip || dayTitle(cell.s)">
+                                             x-data="{show:false}" @mouseenter="show=true" @mouseleave="show=false" style="position:relative;">
                                             <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
+                                            <div class="cell-tip" x-show="show" x-text="cell.tip || dayTitle(cell.s)"></div>
                                         </div>
                                     </td>
                                 </template>
