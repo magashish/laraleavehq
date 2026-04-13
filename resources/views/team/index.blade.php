@@ -184,16 +184,23 @@
                                     </span>
                                     <span x-show="!p.signed_in" style="font-size:11px;color:#ccc;white-space:nowrap;">Not signed in</span>
                                 </div>
-                                {{-- In/WFH toggle only for office-based employees, not permanent remote --}}
-                                <div x-show="p.location !== 'remote'" class="prow-location" style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
-                                    <button @click="setLocation(p.id, 'office')"
-                                            :style="p.location==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
-                                        In
-                                    </button>
-                                    <button @click="setLocation(p.id, 'wfh')"
-                                            :style="p.location==='wfh' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #1d9e75;background:#1d9e75;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
-                                        WFH
-                                    </button>
+                                {{-- In/WFH toggle for office-based; empty placeholder for permanent remote to keep columns aligned --}}
+                                <div class="prow-location" style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
+                                    <template x-if="p.location !== 'remote'">
+                                        <div style="display:flex;flex-direction:column;gap:3px;">
+                                            <button @click="setLocation(p.id, 'office')"
+                                                    :style="p.location==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
+                                                In
+                                            </button>
+                                            <button @click="setLocation(p.id, 'wfh')"
+                                                    :style="p.location==='wfh' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #1d9e75;background:#1d9e75;color:#fff;cursor:pointer;font-family:inherit;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;'">
+                                                WFH
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <template x-if="p.location === 'remote'">
+                                        <div style="width:52px;"></div>
+                                    </template>
                                 </div>
                                 </div>{{-- end prow-meta --}}
                             </div>
