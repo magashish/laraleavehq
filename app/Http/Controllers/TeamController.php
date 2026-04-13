@@ -65,7 +65,7 @@ class TeamController extends Controller
                 'status'     => $this->getUserStatus($emp, $today, $publicHolidays),
                 'signed_in'  => $signedIn,
                 'time'       => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
-                'week'       => array_map(fn($d) => $this->getUserStatus($emp, $d, $publicHolidays), $weekDates),
+                'week'       => array_map(fn($d) => $this->getUserStatusFull($emp, $d, $publicHolidays), $weekDates),
                 'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd, $publicHolidays),
                 'monthGrid'  => $this->getMonthDayStatuses($emp, $monthStart, $monthEnd, $publicHolidays),
             ];
@@ -179,10 +179,13 @@ class TeamController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string
+    /**
+     * Returns full cell data: status string, leave-type color, and tooltip text.
+     */
+    private function getUserStatusFull(User $emp, string $date, array $publicHolidays = []): array
     {
         if (in_array($date, $publicHolidays)) {
-            return 'holiday';
+            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday'];
         }
 
         $leave = $emp->leaveRequests->first(
@@ -190,14 +193,33 @@ class TeamController extends Controller
         );
 
         if ($leave) {
+            $color = $leave->leaveType?->color;
+
             if ($leave->is_short_leave) {
-                $part = $leave->short_leave_part;
-                return $part ? "medical-{$part}" : 'medical';
+                $part   = $leave->short_leave_part;
+                $status = $part ? "medical-{$part}" : 'medical';
+                $tip    = 'Medical' . ($part ? ' (' . ($part === 'morning' ? 'AM' : 'PM') . ')' : '');
+                if ($leave->short_leave_from && $leave->short_leave_to) {
+                    $tip .= ' ' . substr($leave->short_leave_from, 0, 5) . '–' . substr($leave->short_leave_to, 0, 5);
+                }
+                if ($leave->reason) $tip .= ': ' . $leave->reason;
+                return ['s' => $status, 'c' => $color, 'tip' => $tip];
             }
-            return str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick') ? 'sick' : 'leave';
+
+            $isSick = str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick');
+            $status = $isSick ? 'sick' : 'leave';
+            $tip    = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
+            if ($leave->reason) $tip .= ': ' . $leave->reason;
+            return ['s' => $status, 'c' => $color, 'tip' => $tip];
         }
 
-        return $emp->work_location ?? 'unknown';
+        $loc = $emp->work_location ?? 'unknown';
+        return ['s' => $loc, 'c' => null, 'tip' => null];
+    }
+
+    private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string
+    {
+        return $this->getUserStatusFull($emp, $date, $publicHolidays)['s'];
     }
 
     private function getWeekDates(): array
@@ -231,14 +253,14 @@ class TeamController extends Controller
         while ($d->lte($end)) {
             $dateStr = $d->toDateString();
             if ($d->isWeekend()) {
-                $statuses[] = 'weekend';
+                $statuses[] = ['s' => 'weekend', 'c' => null, 'tip' => null];
             } else {
-                $status = $this->getUserStatus($emp, $dateStr, $publicHolidays);
+                $cell = $this->getUserStatusFull($emp, $dateStr, $publicHolidays);
                 // Future days: show leave/holiday/medical if booked, otherwise blank
-                if ($dateStr > $today && !in_array($status, ['leave', 'sick', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
-                    $statuses[] = 'unknown';
+                if ($dateStr > $today && !in_array($cell['s'], ['leave', 'sick', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
+                    $statuses[] = ['s' => 'unknown', 'c' => null, 'tip' => null];
                 } else {
-                    $statuses[] = $status;
+                    $statuses[] = $cell;
                 }
             }
             $d->addDay();

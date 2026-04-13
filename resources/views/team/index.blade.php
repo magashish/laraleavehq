@@ -232,9 +232,11 @@
                                     <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
-                                <template x-for="(s,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[dayCellCls(s), di===todayIdx ? 'today-col' : '']" :title="dayTitle(s)">
-                                        <span style="font-size:9px;font-weight:500;" :class="dayLblCls(s)" x-text="dayLbl(s)"></span>
+                                <template x-for="(cell,di) in p.week" :key="di">
+                                    <div class="day-cell" :class="[dayCellCls(cell.s), di===todayIdx ? 'today-col' : '']"
+                                         :style="cell.c ? 'background:'+cell.c+'44' : ''"
+                                         :title="cell.tip || dayTitle(cell.s)">
+                                        <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
                                     </div>
                                 </template>
                             </div>
@@ -447,10 +449,12 @@
                                     </div>
                                 </td>
                                 {{-- Day cells --}}
-                                <template x-for="(s, i) in p.monthGrid" :key="i">
+                                <template x-for="(cell, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div class="day-cell" :class="dayCellCls(s)" :title="dayTitle(s)">
-                                            <span style="font-size:9px;font-weight:500;" :class="dayLblCls(s)" x-text="dayLbl(s)"></span>
+                                        <div class="day-cell" :class="dayCellCls(cell.s)"
+                                             :style="cell.c ? 'background:'+cell.c+'44' : ''"
+                                             :title="cell.tip || dayTitle(cell.s)">
+                                            <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
                                         </div>
                                     </td>
                                 </template>
@@ -565,7 +569,7 @@ function teamOverview() {
             if (this.view === 'today') {
                 this.teamData.forEach(p => bump(p.status));
             } else if (this.view === 'week') {
-                this.teamData.forEach(p => p.week.forEach(s => bump(s)));
+                this.teamData.forEach(p => p.week.forEach(cell => bump(cell.s)));
             } else {
                 this.teamData.forEach(p => {
                     c.office += p.month.office || 0;

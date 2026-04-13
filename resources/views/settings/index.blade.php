@@ -461,7 +461,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Colour</th>
-                            <th>Counts toward allowance</th>
+                            <th>Allowance</th>
                             <th>Status</th>
                             <th></th>
                         </tr>
