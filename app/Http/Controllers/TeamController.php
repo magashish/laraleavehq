@@ -212,7 +212,7 @@ class TeamController extends Controller
             $status   = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
             $tip      = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            return ['s' => $status, 'c' => $isWfh ? null : $color, 'tip' => $tip];
+            return ['s' => $status, 'c' => $color, 'tip' => $tip];
         }
 
         $loc = $emp->work_location ?? 'unknown';
