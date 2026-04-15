@@ -206,11 +206,13 @@ class TeamController extends Controller
                 return ['s' => $status, 'c' => $color, 'tip' => $tip];
             }
 
-            $isSick = str_contains(strtolower($leave->leaveType?->name ?? ''), 'sick');
-            $status = $isSick ? 'sick' : 'leave';
-            $tip    = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
+            $typeName = strtolower($leave->leaveType?->name ?? '');
+            $isSick   = str_contains($typeName, 'sick');
+            $isWfh    = str_contains($typeName, 'work from home') || str_contains($typeName, 'working from home') || $typeName === 'wfh';
+            $status   = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
+            $tip      = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            return ['s' => $status, 'c' => $color, 'tip' => $tip];
+            return ['s' => $status, 'c' => $isWfh ? null : $color, 'tip' => $tip];
         }
 
         $loc = $emp->work_location ?? 'unknown';
@@ -257,7 +259,7 @@ class TeamController extends Controller
             } else {
                 $cell = $this->getUserStatusFull($emp, $dateStr, $publicHolidays);
                 // Future days: show leave/holiday/medical if booked, otherwise blank
-                if ($dateStr > $today && !in_array($cell['s'], ['leave', 'sick', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
+                if ($dateStr > $today && !in_array($cell['s'], ['leave', 'sick', 'wfh', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
                     $statuses[] = ['s' => 'unknown', 'c' => null, 'tip' => null];
                 } else {
                     $statuses[] = $cell;
