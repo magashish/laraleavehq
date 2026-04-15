@@ -185,7 +185,7 @@ class TeamController extends Controller
     private function getUserStatusFull(User $emp, string $date, array $publicHolidays = []): array
     {
         if (in_array($date, $publicHolidays)) {
-            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday'];
+            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true];
         }
 
         $leave = $emp->leaveRequests->first(
@@ -203,7 +203,7 @@ class TeamController extends Controller
                     $tip .= ' ' . substr($leave->short_leave_from, 0, 5) . '–' . substr($leave->short_leave_to, 0, 5);
                 }
                 if ($leave->reason) $tip .= ': ' . $leave->reason;
-                return ['s' => $status, 'c' => $color, 'tip' => $tip];
+                return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true];
             }
 
             $typeName = strtolower($leave->leaveType?->name ?? '');
@@ -212,11 +212,11 @@ class TeamController extends Controller
             $status   = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
             $tip      = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            return ['s' => $status, 'c' => $color, 'tip' => $tip];
+            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true];
         }
 
         $loc = $emp->work_location ?? 'unknown';
-        return ['s' => $loc, 'c' => null, 'tip' => null];
+        return ['s' => $loc, 'c' => null, 'tip' => null, 'booked' => false];
     }
 
     private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string
@@ -258,9 +258,9 @@ class TeamController extends Controller
                 $statuses[] = ['s' => 'weekend', 'c' => null, 'tip' => null];
             } else {
                 $cell = $this->getUserStatusFull($emp, $dateStr, $publicHolidays);
-                // Future days: show leave/holiday/medical if booked, otherwise blank
-                if ($dateStr > $today && !in_array($cell['s'], ['leave', 'sick', 'wfh', 'holiday', 'medical', 'medical-morning', 'medical-afternoon'])) {
-                    $statuses[] = ['s' => 'unknown', 'c' => null, 'tip' => null];
+                // Future days: show if explicitly booked (leave/holiday), otherwise blank
+                if ($dateStr > $today && !($cell['booked'] ?? false)) {
+                    $statuses[] = ['s' => 'unknown', 'c' => null, 'tip' => null, 'booked' => false];
                 } else {
                     $statuses[] = $cell;
                 }
