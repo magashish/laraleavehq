@@ -183,28 +183,15 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <div class="prow-meta" style="display:contents;">
-                                <span :class="pillCls(p.status)" x-text="statusLabel(p.status)"></span>
+                                <span :class="pillCls(p.status)"
+                                      :style="p.statusColor ? 'background:'+p.statusColor+'33;color:'+p.statusColor+';border-color:'+p.statusColor+'66' : ''"
+                                      x-text="statusLabel(p.status)"></span>
                                 <div class="prow-time" style="width:90px;flex-shrink:0;display:flex;justify-content:center;">
                                     <span x-show="p.signed_in"
                                           style="font-size:10px;padding:2px 8px;border-radius:99px;background:#d8f5ec;color:#0d6648;font-weight:500;white-space:nowrap;">
                                         ✓ <span x-text="p.time"></span>
                                     </span>
                                     <span x-show="!p.signed_in" style="font-size:11px;color:#ccc;white-space:nowrap;">Not signed in</span>
-                                </div>
-                                {{-- Fixed-width column: buttons for office employees, empty for remote --}}
-                                <div class="prow-location" style="width:66px;flex-shrink:0;">
-                                    <template x-if="p.location !== 'remote'">
-                                        <div style="display:flex;flex-direction:column;gap:3px;">
-                                            <button @click="setLocation(p.id, 'office')"
-                                                    :style="p.location==='office' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #83acdb;background:#83acdb;color:#fff;cursor:pointer;font-family:inherit;width:100%;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;width:100%;'">
-                                                In
-                                            </button>
-                                            <button @click="setLocation(p.id, 'wfh')"
-                                                    :style="p.location==='wfh' ? 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #1d9e75;background:#1d9e75;color:#fff;cursor:pointer;font-family:inherit;width:100%;' : 'font-size:10px;padding:3px 10px;border-radius:99px;border:1px solid #d5d2cc;background:#f5f5f3;color:#555;cursor:pointer;font-family:inherit;width:100%;'">
-                                                WFH
-                                            </button>
-                                        </div>
-                                    </template>
                                 </div>
                                 </div>{{-- end prow-meta --}}
                             </div>
@@ -552,23 +539,6 @@ function teamOverview() {
         showCellTip(e, text) { this.cellTip = { show: true, text, x: e.clientX, y: e.clientY }; },
         hideCellTip() { this.cellTip.show = false; },
         isLeaveCell(s) { return s === 'leave' || s === 'sick' || s.startsWith('medical'); },
-
-        async setLocation(userId, status) {
-            const token = document.querySelector('meta[name="csrf-token"]').content;
-            const res = await fetch('/checkin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({ user_id: userId, status }),
-            });
-            if (res.ok) {
-                const p = this.teamData.find(p => p.id === userId);
-                if (p) { p.status = status; p.location = status; }
-            }
-        },
 
         async applyCustom() {
             if (!this.customFrom || !this.customTo) return;
