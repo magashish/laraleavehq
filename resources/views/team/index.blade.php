@@ -58,7 +58,7 @@
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
                 <button class="tp" :class="view==='today'?'active':''"  @click="setView('today')">Today</button>
                 <button class="tp" :class="view==='week'?'active':''"   @click="setView('week')">This week</button>
-                <button class="tp" :class="view==='month'?'active':''"  @click="setView('month')">This month</button>
+                <button class="tp" :class="view==='month'?'active':''"  @click="window.location.href='{{ route('team.index') }}?view=month'">This month</button>
                 <button class="tp" :class="view==='custom'?'active':''" @click="setView('custom')">Custom</button>
             </div>
             <template x-if="view==='custom'">
@@ -421,8 +421,16 @@
     <template x-if="view==='month'">
         <div>
             <div class="ov-card" style="overflow-x:auto;">
-                <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:14px;">
-                    Daily attendance — {{ now()->format('F Y') }}
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <a href="{{ route('team.index') }}?view=month&month={{ $prevMonth }}"
+                       style="font-size:15px;color:#888;text-decoration:none;line-height:1;padding:2px 6px;border-radius:4px;border:1px solid #e0e0e0;background:#f5f5f3;" title="Previous month">‹</a>
+                    <span style="font-size:13px;font-weight:600;color:#1a1a1a;min-width:120px;text-align:center;">{{ $viewMonthLabel }}</span>
+                    <a href="{{ route('team.index') }}?view=month&month={{ $nextMonth }}"
+                       style="font-size:15px;color:#888;text-decoration:none;line-height:1;padding:2px 6px;border-radius:4px;border:1px solid #e0e0e0;background:#f5f5f3;" title="Next month">›</a>
+                    @if(!$isCurrentMonth)
+                        <a href="{{ route('team.index') }}?view=month"
+                           style="font-size:11px;color:#3a8ddd;text-decoration:none;margin-left:4px;">Today's month</a>
+                    @endif
                 </div>
                 <table style="border-collapse:collapse;width:100%;">
                     <thead>
@@ -497,7 +505,7 @@ function teamOverview() {
     const monthDayInfo = @json($monthDayInfo);
 
     return {
-        view: 'today',
+        view: '{{ $initialView }}',
         filter: 'all',
         teamData,
         notices,

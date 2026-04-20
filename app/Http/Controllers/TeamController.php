@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 class TeamController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!Auth::user()->isManager()) {
             abort(403);
@@ -21,18 +21,35 @@ class TeamController extends Controller
 
         $today      = now()->toDateString();
         $weekDates  = $this->getWeekDates();
-        $monthStart = now()->startOfMonth()->toDateString();
-        $monthEnd   = now()->endOfMonth()->toDateString();
 
-        $monthDays    = now()->daysInMonth;
-        $monthDayInfo = collect(range(1, $monthDays))->map(function ($day) {
-            $d = now()->startOfMonth()->addDays($day - 1);
+        // Month navigation: ?month=2026-05 to view other months
+        $monthParam  = $request->get('month');
+        $viewMonth   = $monthParam
+            ? Carbon::createFromFormat('Y-m', $monthParam)->startOfMonth()
+            : now()->startOfMonth();
+
+        $monthStart = $viewMonth->toDateString();
+        $monthEnd   = $viewMonth->copy()->endOfMonth()->toDateString();
+        $monthDays  = $viewMonth->daysInMonth;
+
+        $prevMonth      = $viewMonth->copy()->subMonth()->format('Y-m');
+        $nextMonth      = $viewMonth->copy()->addMonth()->format('Y-m');
+        $viewMonthLabel = $viewMonth->format('F Y');
+        $isCurrentMonth = $viewMonth->isSameMonth(now());
+        $initialView    = $request->get('view', 'today');
+
+        $monthDayInfo = collect(range(1, $monthDays))->map(function ($day) use ($viewMonth) {
+            $d = $viewMonth->copy()->addDays($day - 1);
             return [
                 'num'     => $day,
                 'label'   => $d->format('D')[0],
                 'weekend' => $d->isWeekend(),
             ];
         })->values()->toArray();
+
+        // Load leaves covering either the viewed month or the current week
+        $leaveFrom = min($weekDates[0], $monthStart);
+        $leaveTo   = max($weekDates[4], $monthEnd);
 
         $publicHolidays = BankHoliday::whereBetween('date', [$monthStart, $monthEnd])
             ->pluck('date')
@@ -43,8 +60,8 @@ class TeamController extends Controller
             'leaveRequests' => fn($q) => $q
                 ->with('leaveType')
                 ->where('status', 'approved')
-                ->where('start_date', '<=', $monthEnd)
-                ->where('end_date', '>=', $monthStart),
+                ->where('start_date', '<=', $leaveTo)
+                ->where('end_date', '>=', $leaveFrom),
             'checkins' => fn($q) => $q->where('date', $today),
         ])->orderBy('name')->get();
 
@@ -76,7 +93,10 @@ class TeamController extends Controller
         $managerNotices = TeamNotice::with(['author', 'targetUser'])->latest()->get();
         $allEmployees   = $employees;
 
-        return view('team.index', compact('teamData', 'notices', 'todayIdx', 'weekLabels', 'managerNotices', 'allEmployees', 'monthDayInfo'));
+        return view('team.index', compact(
+            'teamData', 'notices', 'todayIdx', 'weekLabels', 'managerNotices', 'allEmployees',
+            'monthDayInfo', 'prevMonth', 'nextMonth', 'viewMonthLabel', 'isCurrentMonth', 'initialView'
+        ));
     }
 
     public function custom(Request $request)
