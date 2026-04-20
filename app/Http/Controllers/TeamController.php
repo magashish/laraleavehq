@@ -124,14 +124,33 @@ class TeamController extends Controller
                 ->where('end_date', '>=', $from),
         ])->orderBy('name')->get();
 
+        // Build day-by-day column info
+        $dayInfo = [];
+        $d = Carbon::parse($from);
+        $e = Carbon::parse($to);
+        $prevMonthSeen = null;
+        while ($d->lte($e)) {
+            $monthLabel = ($prevMonthSeen !== $d->format('Y-m')) ? $d->format('M') : null;
+            $prevMonthSeen = $d->format('Y-m');
+            $dayInfo[] = [
+                'date'       => $d->toDateString(),
+                'num'        => (int) $d->format('j'),
+                'label'      => $d->format('D')[0],
+                'weekend'    => $d->isWeekend(),
+                'monthLabel' => $monthLabel,
+            ];
+            $d->addDay();
+        }
+
         $teamData = $employees->map(function ($emp) use ($from, $to, $publicHolidays) {
             $leave = 0;
             $sick  = 0;
 
             foreach ($emp->leaveRequests as $l) {
-                $start  = max($l->start_date->toDateString(), $from);
-                $end    = min($l->end_date->toDateString(), $to);
-                $isSick = str_contains(strtolower($l->leaveType?->name ?? ''), 'sick');
+                $start    = max($l->start_date->toDateString(), $from);
+                $end      = min($l->end_date->toDateString(), $to);
+                $typeName = strtolower($l->leaveType?->name ?? '');
+                $isSick   = str_contains($typeName, 'sick');
 
                 $d = Carbon::parse($start);
                 $e = Carbon::parse($end);
@@ -159,6 +178,7 @@ class TeamController extends Controller
                 'remote'   => $remote,
                 'leave'    => $leave,
                 'sick'     => $sick,
+                'dayGrid'  => $this->getMonthDayStatuses($emp, $from, $to, $publicHolidays),
             ];
         })->values();
 
@@ -169,7 +189,7 @@ class TeamController extends Controller
             'sick'   => $teamData->sum('sick'),
         ];
 
-        return response()->json(compact('teamData', 'totals'));
+        return response()->json(compact('teamData', 'totals', 'dayInfo'));
     }
 
     public function storeNotice(Request $request)

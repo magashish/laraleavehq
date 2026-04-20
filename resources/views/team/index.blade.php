@@ -385,32 +385,62 @@
                             <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#e24b4a;display:inline-block;"></span>Sick</span>
                         </div>
                     </div>
-                    <div class="ov-card">
-                        <div style="font-size:12px;font-weight:500;color:#888;letter-spacing:.02em;margin-bottom:12px;">Per-person breakdown</div>
-                        <template x-for="p in customData.teamData" :key="p.id">
-                            <div class="prow">
-                                <template x-if="p.photo_url">
-                                    <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-                                </template>
-                                <template x-if="!p.photo_url">
-                                    <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
-                                         x-text="p.initials"></div>
-                                </template>
-                                <div style="flex:1;min-width:0;">
-                                    <div style="font-size:13px;font-weight:500;color:#1a1a1a;" x-text="p.name"></div>
-                                    <div style="font-size:11px;color:#888;" x-text="p.role"></div>
-                                </div>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                    <template x-if="p.office>0"><span class="pill p-in"  x-text="p.office+'d in office'"></span></template>
-                                    <template x-if="p.remote>0"><span class="pill p-re"  x-text="p.remote+'d remote'"></span></template>
-                                    <template x-if="p.leave>0"> <span class="pill p-le"  x-text="p.leave+'d leave'"></span></template>
-                                    <template x-if="p.sick>0">  <span class="pill p-si"  x-text="p.sick+'d sick'"></span></template>
-                                    <template x-if="p.office===0 && p.remote===0 && p.leave===0 && p.sick===0">
-                                        <span class="pill p-off">No data</span>
+                    <div class="ov-card" style="overflow-x:auto;">
+                        <table style="border-collapse:collapse;width:100%;">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:160px;text-align:left;font-size:11px;color:#aaa;font-weight:500;padding:0 12px 8px 0;position:sticky;left:0;background:#fff;z-index:2;"></th>
+                                    <template x-for="d in customData.dayInfo" :key="d.date">
+                                        <th :style="d.weekend ? 'width:26px;min-width:26px;text-align:center;padding:0 1px 8px;' : 'width:26px;min-width:26px;text-align:center;padding:0 1px 8px;'">
+                                            <div style="font-size:8px;color:#c4b5fd;font-weight:600;height:10px;line-height:10px;" x-text="d.monthLabel || ''"></div>
+                                            <div :style="d.weekend ? 'font-size:10px;color:#ccc;font-weight:600;' : 'font-size:10px;color:#aaa;font-weight:600;'" x-text="d.num"></div>
+                                            <div :style="d.weekend ? 'font-size:9px;color:#ddd;' : 'font-size:9px;color:#bbb;'" x-text="d.label"></div>
+                                        </th>
                                     </template>
-                                </div>
-                            </div>
-                        </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="p in customData.teamData" :key="p.id">
+                                    <tr>
+                                        <td style="padding:3px 12px 3px 0;position:sticky;left:0;background:#fff;z-index:1;border-bottom:1px solid #f5f5f3;">
+                                            <div style="display:flex;align-items:center;gap:7px;">
+                                                <template x-if="p.photo_url">
+                                                    <img :src="p.photo_url" :alt="p.name" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                                </template>
+                                                <template x-if="!p.photo_url">
+                                                    <div :style="'width:26px;height:26px;font-size:9px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                                         x-text="p.initials"></div>
+                                                </template>
+                                                <div>
+                                                    <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;" x-text="p.name"></div>
+                                                    <div style="font-size:10px;color:#aaa;white-space:nowrap;" x-text="p.role"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <template x-for="(cell, i) in p.dayGrid" :key="i">
+                                            <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
+                                                <div class="day-cell" :class="[dayCellCls(cell.s), isLeaveCell(cell.s) ? 'has-tip' : '']"
+                                                     :style="cell.c ? 'background:'+cell.c+'44' : ''"
+                                                     @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
+                                                     @mouseleave="hideCellTip()">
+                                                    <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        {{-- Legend --}}
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:10px;border-top:1px solid #f0f0ee;">
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ddeeff;border:1px solid #b5d4f4;display:inline-block;"></span>In</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#c6ede0;border:1px solid #7acbab;display:inline-block;"></span>Re</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#d8f5ec;border:1px solid #9fe1cb;display:inline-block;"></span>WFH</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#efefed;border:1px solid #d3d1c7;display:inline-block;"></span>Leave</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fff0d0;border:1px solid #e8c97a;display:inline-block;"></span>Medical</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#fde8e8;border:1px solid #f7c1c1;display:inline-block;"></span>Sick</span>
+                            <span style="font-size:11px;color:#888;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#ede9fe;border:1px solid #c4b5fd;display:inline-block;"></span>Holiday</span>
+                        </div>
                     </div>
                 </div>
             </template>
