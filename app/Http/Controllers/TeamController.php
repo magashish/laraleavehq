@@ -257,6 +257,8 @@ class TeamController extends Controller
         }
 
         $loc = $emp->work_location ?? 'unknown';
+        // 'wfh' work_location is legacy from old toggle buttons; WFH is now leave-only
+        if ($loc === 'wfh') $loc = 'office';
         return ['s' => $loc, 'c' => null, 'tip' => null, 'booked' => false];
     }
 
