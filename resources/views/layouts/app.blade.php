@@ -17,7 +17,8 @@
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
         </button>
-        <span class="mobile-brand">Pinnacle Internet Marketing</span>
+        <img src="https://pinnacleinternetmarketing.co.uk/wp-content/uploads/2025/12/Pinnacle-logo-resized.png"
+             alt="Pinnacle Internet Marketing" style="max-height:32px;object-fit:contain;">
     </div>
 
     {{-- Sidebar backdrop --}}
@@ -27,7 +28,9 @@
     <aside class="sidebar" :class="sidebarOpen ? 'sidebar-open' : ''">
         <div class="sidebar-logo">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-                <h1>Pinnacle Internet Marketing</h1>
+                <img src="https://pinnacleinternetmarketing.co.uk/wp-content/uploads/2025/12/Pinnacle-logo-resized.png"
+                     alt="Pinnacle Internet Marketing"
+                     style="max-width:160px;max-height:48px;object-fit:contain;">
                 <button class="sidebar-close" @click="sidebarOpen = false" aria-label="Close menu">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
