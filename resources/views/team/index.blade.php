@@ -184,7 +184,7 @@
                                 </div>
                                 <div class="prow-meta" style="display:contents;">
                                 <span :class="pillCls(p.status)"
-                                      :style="p.statusColor ? 'background:'+p.statusColor+'33;color:'+p.statusColor+';border-color:'+p.statusColor+'66' : ''"
+                                      :style="p.statusColor ? 'background:'+p.statusColor+'33;border-color:'+p.statusColor+'88' : ''"
                                       x-text="statusLabel(p.status)"></span>
                                 <div class="prow-time" style="width:90px;flex-shrink:0;display:flex;justify-content:center;">
                                     <span x-show="p.signed_in"
