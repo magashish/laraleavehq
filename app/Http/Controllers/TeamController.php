@@ -229,11 +229,15 @@ class TeamController extends Controller
             return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true];
         }
 
-        $leave = $emp->leaveRequests->first(
+        $leaves = $emp->leaveRequests->filter(
             fn($l) => $l->start_date->toDateString() <= $date && $l->end_date->toDateString() >= $date
         );
 
-        if ($leave) {
+        if ($leaves->isNotEmpty()) {
+            // Priority: short leave (medical) > sick > other (WFH, annual, etc.)
+            $leave = $leaves->first(fn($l) => $l->is_short_leave)
+                ?? $leaves->first(fn($l) => str_contains(strtolower($l->leaveType?->name ?? ''), 'sick'))
+                ?? $leaves->first();
             $color = $leave->leaveType?->color;
 
             if ($leave->is_short_leave) {
