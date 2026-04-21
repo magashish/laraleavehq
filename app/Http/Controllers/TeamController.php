@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BankHoliday;
 use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use App\Models\TeamNotice;
 use App\Models\User;
 use Carbon\Carbon;
@@ -38,6 +39,12 @@ class TeamController extends Controller
         $isCurrentMonth = $viewMonth->isSameMonth(now());
         $initialView    = $request->get('view', 'today');
 
+        // Colour to use for permanent-WFH cells — matches the WFH leave type setting
+        $wfhLeaveColor  = LeaveType::where('name', 'like', '%work from home%')
+            ->orWhere('name', 'like', '%working from home%')
+            ->orWhere(fn($q) => $q->whereRaw('LOWER(name) = ?', ['wfh']))
+            ->value('color');
+
         $monthDayInfo = collect(range(1, $monthDays))->map(function ($day) use ($viewMonth) {
             $d = $viewMonth->copy()->addDays($day - 1);
             return [
@@ -68,24 +75,24 @@ class TeamController extends Controller
         $dayOfWeek = now()->dayOfWeekIso; // 1=Mon … 7=Sun
         $todayIdx  = ($dayOfWeek >= 1 && $dayOfWeek <= 5) ? $dayOfWeek - 1 : null;
 
-        $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd, $publicHolidays) {
+        $teamData = $employees->map(function ($emp) use ($today, $weekDates, $monthStart, $monthEnd, $publicHolidays, $wfhLeaveColor) {
             $todayCheckin = $emp->checkins->first();
             $signedIn     = $todayCheckin && $todayCheckin->checked_in_at && !$todayCheckin->signed_out_at;
             return [
-                'id'         => $emp->id,
-                'name'       => $emp->name,
-                'role'       => $emp->role,
-                'color'      => $emp->color,
-                'initials'   => $emp->initials(),
-                'photo_url'  => $emp->photoUrl(),
-                'location'     => $emp->work_location,
-                'status'       => ($todayFull = $this->getUserStatusFull($emp, $today, $publicHolidays))['s'],
-                'statusColor'  => $todayFull['c'],
-                'signed_in'  => $signedIn,
-                'time'       => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
-                'week'       => array_map(fn($d) => $this->getUserStatusFull($emp, $d, $publicHolidays), $weekDates),
-                'month'      => $this->getMonthStats($emp, $monthStart, $monthEnd, $publicHolidays),
-                'monthGrid'  => $this->getMonthDayStatuses($emp, $monthStart, $monthEnd, $publicHolidays),
+                'id'          => $emp->id,
+                'name'        => $emp->name,
+                'role'        => $emp->role,
+                'color'       => $emp->color,
+                'initials'    => $emp->initials(),
+                'photo_url'   => $emp->photoUrl(),
+                'location'    => $emp->work_location,
+                'status'      => ($todayFull = $this->getUserStatusFull($emp, $today, $publicHolidays, $wfhLeaveColor))['s'],
+                'statusColor' => $todayFull['c'],
+                'signed_in'   => $signedIn,
+                'time'        => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
+                'week'        => array_map(fn($d) => $this->getUserStatusFull($emp, $d, $publicHolidays, $wfhLeaveColor), $weekDates),
+                'month'       => $this->getMonthStats($emp, $monthStart, $monthEnd, $publicHolidays),
+                'monthGrid'   => $this->getMonthDayStatuses($emp, $monthStart, $monthEnd, $publicHolidays, $wfhLeaveColor),
             ];
         })->values();
 
@@ -116,6 +123,11 @@ class TeamController extends Controller
             ->pluck('date')
             ->map(fn($d) => $d->toDateString())
             ->toArray();
+
+        $wfhLeaveColor = LeaveType::where('name', 'like', '%work from home%')
+            ->orWhere('name', 'like', '%working from home%')
+            ->orWhere(fn($q) => $q->whereRaw('LOWER(name) = ?', ['wfh']))
+            ->value('color');
 
         $employees = User::with([
             'leaveRequests' => fn($q) => $q
@@ -179,7 +191,7 @@ class TeamController extends Controller
                 'remote'   => $remote,
                 'leave'    => $leave,
                 'sick'     => $sick,
-                'dayGrid'  => $this->getMonthDayStatuses($emp, $from, $to, $publicHolidays),
+                'dayGrid'  => $this->getMonthDayStatuses($emp, $from, $to, $publicHolidays, $wfhLeaveColor),
             ];
         })->values();
 
@@ -223,7 +235,7 @@ class TeamController extends Controller
     /**
      * Returns full cell data: status string, leave-type color, and tooltip text.
      */
-    private function getUserStatusFull(User $emp, string $date, array $publicHolidays = []): array
+    private function getUserStatusFull(User $emp, string $date, array $publicHolidays = [], ?string $wfhLeaveColor = null): array
     {
         if (in_array($date, $publicHolidays)) {
             return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true];
@@ -260,8 +272,9 @@ class TeamController extends Controller
             return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true];
         }
 
-        $loc = $emp->work_location ?? 'unknown';
-        return ['s' => $loc, 'c' => null, 'tip' => null, 'booked' => false];
+        $loc   = $emp->work_location ?? 'unknown';
+        $color = ($loc === 'wfh') ? $wfhLeaveColor : null;
+        return ['s' => $loc, 'c' => $color, 'tip' => null, 'booked' => false];
     }
 
     private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string
@@ -290,7 +303,7 @@ class TeamController extends Controller
         return $count;
     }
 
-    private function getMonthDayStatuses(User $emp, string $monthStart, string $monthEnd, array $publicHolidays = []): array
+    private function getMonthDayStatuses(User $emp, string $monthStart, string $monthEnd, array $publicHolidays = [], ?string $wfhLeaveColor = null): array
     {
         $statuses = [];
         $today    = now()->toDateString();
@@ -302,7 +315,7 @@ class TeamController extends Controller
             if ($d->isWeekend()) {
                 $statuses[] = ['s' => 'weekend', 'c' => null, 'tip' => null];
             } else {
-                $cell = $this->getUserStatusFull($emp, $dateStr, $publicHolidays);
+                $cell = $this->getUserStatusFull($emp, $dateStr, $publicHolidays, $wfhLeaveColor);
                 // Future days: show if booked, or if employee has a permanent location (wfh/remote)
                 if ($dateStr > $today && !($cell['booked'] ?? false) && !in_array($cell['s'], ['wfh', 'remote'])) {
                     $statuses[] = ['s' => 'unknown', 'c' => null, 'tip' => null, 'booked' => false];
