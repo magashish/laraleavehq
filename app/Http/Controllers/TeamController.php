@@ -261,8 +261,6 @@ class TeamController extends Controller
         }
 
         $loc = $emp->work_location ?? 'unknown';
-        // 'wfh' work_location is legacy from old toggle buttons; WFH is now leave-only
-        if ($loc === 'wfh') $loc = 'office';
         return ['s' => $loc, 'c' => null, 'tip' => null, 'booked' => false];
     }
 
@@ -305,8 +303,8 @@ class TeamController extends Controller
                 $statuses[] = ['s' => 'weekend', 'c' => null, 'tip' => null];
             } else {
                 $cell = $this->getUserStatusFull($emp, $dateStr, $publicHolidays);
-                // Future days: show if explicitly booked (leave/holiday), otherwise blank
-                if ($dateStr > $today && !($cell['booked'] ?? false)) {
+                // Future days: show if booked, or if employee has a permanent location (wfh/remote)
+                if ($dateStr > $today && !($cell['booked'] ?? false) && !in_array($cell['s'], ['wfh', 'remote'])) {
                     $statuses[] = ['s' => 'unknown', 'c' => null, 'tip' => null, 'booked' => false];
                 } else {
                     $statuses[] = $cell;

@@ -69,6 +69,7 @@
                             <select name="work_location" class="form-select" required>
                                 <option value="office">In office (UK-based)</option>
                                 <option value="remote">Remote (permanent)</option>
+                                <option value="wfh">WFH (permanent)</option>
                             </select>
                         </div>
                     </div>
@@ -143,6 +144,7 @@
                             <select name="work_location" class="form-select" required>
                                 <option value="office" :selected="editEmp.work_location === 'office'">In office (UK-based)</option>
                                 <option value="remote" :selected="editEmp.work_location === 'remote'">Remote (permanent)</option>
+                                <option value="wfh"    :selected="editEmp.work_location === 'wfh'">WFH (permanent)</option>
                             </select>
                         </div>
                     </div>

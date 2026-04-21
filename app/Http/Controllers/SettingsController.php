@@ -59,7 +59,7 @@ class SettingsController extends Controller
             'role_type'     => 'required|in:admin,manager,employee,contractor,intern',
             'days_allowed'  => 'required|integer|min:0|max:60',
             'color'         => 'required|string|max:10',
-            'work_location' => 'required|in:office,remote',
+            'work_location' => 'required|in:office,remote,wfh',
         ]);
 
         // Restrict creating admins to admins only
@@ -94,7 +94,7 @@ class SettingsController extends Controller
             'role_type'     => 'required|in:admin,manager,employee,contractor,intern',
             'days_allowed'  => 'required|integer|min:0|max:60',
             'color'         => 'required|string|max:10',
-            'work_location' => 'required|in:office,remote',
+            'work_location' => 'required|in:office,remote,wfh',
         ];
 
         $validated = $request->validate($rules);
