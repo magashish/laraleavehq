@@ -14,7 +14,7 @@
 .p-med { background:#fff0d0;color:#7a4800; }
 .p-wfh { background:#d8f5ec;color:#0d6648; }
 .day-cell { width:32px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-.dc-in   { background:#ddeeff; }   .dc-re  { background:#ede9fe; }
+.dc-in   { background:#FAF9F6; }   .dc-re  { background:#ede9fe; }
 .dc-le   { background:#efefed; }  .dc-si  { background:#fde8e8; }
 .dc-off  { background:#f5f5f3; }  .dc-hol { background:#ddeeff; }
 .dc-med  { background:#fff0d0; }  .dc-wfh { background:#ede9fe; }
