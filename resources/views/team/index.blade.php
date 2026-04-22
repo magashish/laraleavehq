@@ -14,14 +14,14 @@
 .p-med { background:#fff0d0;color:#7a4800; }
 .p-wfh { background:#d8f5ec;color:#0d6648; }
 .day-cell { width:32px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-.dc-in   { background:#ddeeff; }  .dc-re  { background:#c6ede0; }
+.dc-in   { }                       .dc-re  { background:#ede9fe; }
 .dc-le   { background:#efefed; }  .dc-si  { background:#fde8e8; }
-.dc-off  { background:#f5f5f3; }  .dc-hol { background:#ede9fe; }
-.dc-med  { background:#fff0d0; }  .dc-wfh { background:#d8f5ec; }
-.dcl-in  { color:#1558a0; }       .dcl-re { color:#0d6648; }
+.dc-off  { background:#f5f5f3; }  .dc-hol { background:#ddeeff; }
+.dc-med  { background:#fff0d0; }  .dc-wfh { background:#ede9fe; }
+.dcl-in  { color:#555; }          .dcl-re { color:#5b21b6; }
 .dcl-le  { color:#555; }          .dcl-si { color:#a02020; }
-.dcl-off { color:#bbb; }          .dcl-hol { color:#5b21b6; }
-.dcl-med { color:#7a4800; }       .dcl-wfh { color:#0d6648; }
+.dcl-off { color:#bbb; }          .dcl-hol { color:#1558a0; }
+.dcl-med { color:#7a4800; }       .dcl-wfh { color:#5b21b6; }
 .today-col { outline:1.5px solid #3a8ddd;border-radius:6px; }
 .nb-warn { background:#fff0d8;color:#7a4800; }
 .nb-info { background:#ddeeff;color:#1558a0; }
@@ -227,11 +227,10 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <template x-for="(cell,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[dayCellCls(cell.s), di===todayIdx ? 'today-col' : '', (cell.booked && cell.loc) ? 'has-tip' : '']"
-                                         :style="cell.c ? 'background:'+cell.c+'44' : ''"
+                                    <div class="day-cell" :class="[cellBgCls(cell), di===todayIdx ? 'today-col' : '', (cell.booked && cell.loc) ? 'has-tip' : '']"
                                          @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                          @mouseleave="hideCellTip()">
-                                        <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="cellLbl(cell)"></span>
+                                        <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
                                     </div>
                                 </template>
                             </div>
@@ -406,11 +405,10 @@
                                         </td>
                                         <template x-for="(cell, i) in p.dayGrid" :key="i">
                                             <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                                <div class="day-cell" :class="[dayCellCls(cell.s), (cell.booked && cell.loc) ? 'has-tip' : '']"
-                                                     :style="cell.c ? 'background:'+cell.c+'44' : ''"
+                                                <div class="day-cell" :class="[cellBgCls(cell), (cell.booked && cell.loc) ? 'has-tip' : '']"
                                                      @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                                      @mouseleave="hideCellTip()">
-                                                    <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="cellLbl(cell)"></span>
+                                                    <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
                                                 </div>
                                             </td>
                                         </template>
@@ -484,11 +482,10 @@
                                 {{-- Day cells --}}
                                 <template x-for="(cell, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div class="day-cell" :class="[dayCellCls(cell.s), (cell.booked && cell.loc) ? 'has-tip' : '']"
-                                             :style="cell.c ? 'background:'+cell.c+'44' : ''"
+                                        <div class="day-cell" :class="[cellBgCls(cell), (cell.booked && cell.loc) ? 'has-tip' : '']"
                                              @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                              @mouseleave="hideCellTip()">
-                                            <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="cellLbl(cell)"></span>
+                                            <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
                                         </div>
                                     </td>
                                 </template>
@@ -544,6 +541,19 @@ function teamOverview() {
                 return {office:'In', wfh:'WFH', remote:'Re'}[cell.loc] || 'In';
             }
             return this.dayLbl(cell.s);
+        },
+        cellBgCls(cell) {
+            const loc = (cell.booked && cell.loc) ? cell.loc : cell.s;
+            if (loc === 'holiday') return 'dc-hol';
+            if (loc === 'wfh')     return 'dc-wfh';
+            if (loc === 'remote')  return 'dc-re';
+            if (loc === 'office')  return 'dc-in';
+            return 'dc-off';
+        },
+        cellLblCls(cell) {
+            const loc = (cell.booked && cell.loc) ? cell.loc : cell.s;
+            if (loc.startsWith('medical')) return 'dcl-in';
+            return ({office:'dcl-in',remote:'dcl-re',wfh:'dcl-wfh',leave:'dcl-le',sick:'dcl-si',holiday:'dcl-hol',unknown:'dcl-off'}[loc]||'dcl-off');
         },
 
         async applyCustom() {
