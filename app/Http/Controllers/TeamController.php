@@ -238,7 +238,7 @@ class TeamController extends Controller
     private function getUserStatusFull(User $emp, string $date, array $publicHolidays = [], ?string $wfhLeaveColor = null): array
     {
         if (in_array($date, $publicHolidays)) {
-            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true];
+            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true, 'loc' => null];
         }
 
         $leaves = $emp->leaveRequests->filter(
@@ -251,6 +251,7 @@ class TeamController extends Controller
                 ?? $leaves->first(fn($l) => str_contains(strtolower($l->leaveType?->name ?? ''), 'sick'))
                 ?? $leaves->first();
             $color = $leave->leaveType?->color;
+            $empLoc = $emp->work_location ?? 'office';
 
             if ($leave->is_short_leave) {
                 $part   = $leave->short_leave_part;
@@ -260,7 +261,7 @@ class TeamController extends Controller
                     $tip .= ' ' . substr($leave->short_leave_from, 0, 5) . '–' . substr($leave->short_leave_to, 0, 5);
                 }
                 if ($leave->reason) $tip .= ': ' . $leave->reason;
-                return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true];
+                return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc];
             }
 
             $typeName = strtolower($leave->leaveType?->name ?? '');
@@ -269,12 +270,12 @@ class TeamController extends Controller
             $status   = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
             $tip      = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true];
+            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc];
         }
 
         $loc   = $emp->work_location ?? 'unknown';
         $color = ($loc === 'wfh') ? $wfhLeaveColor : null;
-        return ['s' => $loc, 'c' => $color, 'tip' => null, 'booked' => false];
+        return ['s' => $loc, 'c' => $color, 'tip' => null, 'booked' => false, 'loc' => null];
     }
 
     private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string

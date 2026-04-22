@@ -227,11 +227,11 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <template x-for="(cell,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[dayCellCls(cell.s), di===todayIdx ? 'today-col' : '', isLeaveCell(cell.s) ? 'has-tip' : '']"
+                                    <div class="day-cell" :class="[dayCellCls(cell.s), di===todayIdx ? 'today-col' : '', (cell.booked && cell.loc) ? 'has-tip' : '']"
                                          :style="cell.c ? 'background:'+cell.c+'44' : ''"
                                          @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                          @mouseleave="hideCellTip()">
-                                        <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
+                                        <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="cellLbl(cell)"></span>
                                     </div>
                                 </template>
                             </div>
@@ -406,11 +406,11 @@
                                         </td>
                                         <template x-for="(cell, i) in p.dayGrid" :key="i">
                                             <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                                <div class="day-cell" :class="[dayCellCls(cell.s), isLeaveCell(cell.s) ? 'has-tip' : '']"
+                                                <div class="day-cell" :class="[dayCellCls(cell.s), (cell.booked && cell.loc) ? 'has-tip' : '']"
                                                      :style="cell.c ? 'background:'+cell.c+'44' : ''"
                                                      @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                                      @mouseleave="hideCellTip()">
-                                                    <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
+                                                    <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="cellLbl(cell)"></span>
                                                 </div>
                                             </td>
                                         </template>
@@ -484,11 +484,11 @@
                                 {{-- Day cells --}}
                                 <template x-for="(cell, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div class="day-cell" :class="[dayCellCls(cell.s), isLeaveCell(cell.s) ? 'has-tip' : '']"
+                                        <div class="day-cell" :class="[dayCellCls(cell.s), (cell.booked && cell.loc) ? 'has-tip' : '']"
                                              :style="cell.c ? 'background:'+cell.c+'44' : ''"
                                              @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                              @mouseleave="hideCellTip()">
-                                            <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="dayLbl(cell.s)"></span>
+                                            <span style="font-size:9px;font-weight:500;" :class="dayLblCls(cell.s)" x-text="cellLbl(cell)"></span>
                                         </div>
                                     </td>
                                 </template>
@@ -539,6 +539,12 @@ function teamOverview() {
         showCellTip(e, text) { this.cellTip = { show: true, text, x: e.clientX, y: e.clientY }; },
         hideCellTip() { this.cellTip.show = false; },
         isLeaveCell(s) { return s === 'leave' || s === 'sick' || s.startsWith('medical'); },
+        cellLbl(cell) {
+            if (cell.booked && cell.loc) {
+                return {office:'In', wfh:'WFH', remote:'Re'}[cell.loc] || 'In';
+            }
+            return this.dayLbl(cell.s);
+        },
 
         async applyCustom() {
             if (!this.customFrom || !this.customTo) return;
