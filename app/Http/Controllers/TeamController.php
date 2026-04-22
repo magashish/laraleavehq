@@ -155,7 +155,7 @@ class TeamController extends Controller
             $d->addDay();
         }
 
-        $teamData = $employees->map(function ($emp) use ($from, $to, $publicHolidays) {
+        $teamData = $employees->map(function ($emp) use ($from, $to, $publicHolidays, $wfhLeaveColor) {
             $leave = 0;
             $sick  = 0;
 
