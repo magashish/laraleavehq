@@ -238,7 +238,7 @@ class TeamController extends Controller
     private function getUserStatusFull(User $emp, string $date, array $publicHolidays = [], ?string $wfhLeaveColor = null): array
     {
         if (in_array($date, $publicHolidays)) {
-            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true, 'loc' => null];
+            return ['s' => 'holiday', 'c' => null, 'tip' => 'Public holiday', 'booked' => true, 'loc' => null, 'is_medical' => false];
         }
 
         $leaves = $emp->leaveRequests->filter(
@@ -250,7 +250,7 @@ class TeamController extends Controller
             $leave = $leaves->first(fn($l) => $l->is_short_leave)
                 ?? $leaves->first(fn($l) => str_contains(strtolower($l->leaveType?->name ?? ''), 'sick'))
                 ?? $leaves->first();
-            $color = $leave->leaveType?->color;
+            $color  = $leave->leaveType?->color;
             $empLoc = $emp->work_location ?? 'office';
 
             if ($leave->is_short_leave) {
@@ -261,7 +261,8 @@ class TeamController extends Controller
                     $tip .= ' ' . substr($leave->short_leave_from, 0, 5) . '–' . substr($leave->short_leave_to, 0, 5);
                 }
                 if ($leave->reason) $tip .= ': ' . $leave->reason;
-                return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc];
+                // Medical: no cell color override — cell stays as employee's base location
+                return ['s' => $status, 'c' => null, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => true];
             }
 
             $typeName = strtolower($leave->leaveType?->name ?? '');
@@ -270,12 +271,13 @@ class TeamController extends Controller
             $status   = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
             $tip      = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc];
+            // Use the leave type's configured color as the cell background
+            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => false];
         }
 
         $loc   = $emp->work_location ?? 'unknown';
         $color = ($loc === 'wfh') ? $wfhLeaveColor : null;
-        return ['s' => $loc, 'c' => $color, 'tip' => null, 'booked' => false, 'loc' => null];
+        return ['s' => $loc, 'c' => $color, 'tip' => null, 'booked' => false, 'loc' => null, 'is_medical' => false];
     }
 
     private function getUserStatus(User $emp, string $date, array $publicHolidays = []): string

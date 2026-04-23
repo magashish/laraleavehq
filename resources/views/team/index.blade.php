@@ -227,7 +227,8 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <template x-for="(cell,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[cellBgCls(cell), di===todayIdx ? 'today-col' : '', (cell.booked && cell.loc) ? 'has-tip' : '']"
+                                    <div class="day-cell" :class="[cellBgCls(cell), di===todayIdx ? 'today-col' : '', cell.is_medical ? 'has-tip' : '']"
+                                         :style="(cell.booked && !cell.is_medical && cell.c) ? 'background:'+cell.c+'55' : ''"
                                          @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                          @mouseleave="hideCellTip()">
                                         <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
@@ -405,7 +406,8 @@
                                         </td>
                                         <template x-for="(cell, i) in p.dayGrid" :key="i">
                                             <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                                <div class="day-cell" :class="[cellBgCls(cell), (cell.booked && cell.loc) ? 'has-tip' : '']"
+                                                <div class="day-cell" :class="[cellBgCls(cell), cell.is_medical ? 'has-tip' : '']"
+                                                     :style="(cell.booked && !cell.is_medical && cell.c) ? 'background:'+cell.c+'55' : ''"
                                                      @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                                      @mouseleave="hideCellTip()">
                                                     <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
@@ -482,7 +484,8 @@
                                 {{-- Day cells --}}
                                 <template x-for="(cell, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
-                                        <div class="day-cell" :class="[cellBgCls(cell), (cell.booked && cell.loc) ? 'has-tip' : '']"
+                                        <div class="day-cell" :class="[cellBgCls(cell), cell.is_medical ? 'has-tip' : '']"
+                                             :style="(cell.booked && !cell.is_medical && cell.c) ? 'background:'+cell.c+'55' : ''"
                                              @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                              @mouseleave="hideCellTip()">
                                             <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
