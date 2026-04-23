@@ -540,7 +540,10 @@ function teamOverview() {
         hideCellTip() { this.cellTip.show = false; },
         isLeaveCell(s) { return s === 'leave' || s === 'sick' || s.startsWith('medical'); },
         cellLbl(cell) {
-            if (cell.booked && !cell.is_medical && cell.loc) return ''; // leave cells: colour only, no text
+            if (cell.booked && !cell.is_medical && cell.loc) {
+                if (cell.s === 'wfh') return 'WFH'; // WFH leave always shows label
+                return ''; // other leave cells: colour only
+            }
             if (cell.booked && cell.loc) {
                 return {office:'In', wfh:'WFH', remote:'Re'}[cell.loc] || 'In';
             }
