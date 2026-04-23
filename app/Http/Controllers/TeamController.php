@@ -265,11 +265,20 @@ class TeamController extends Controller
                 return ['s' => $status, 'c' => null, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => true];
             }
 
-            $typeName = strtolower($leave->leaveType?->name ?? '');
-            $isSick   = str_contains($typeName, 'sick');
-            $isWfh    = str_contains($typeName, 'work from home') || str_contains($typeName, 'working from home') || $typeName === 'wfh';
-            $status   = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
-            $tip      = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
+            $typeName  = strtolower($leave->leaveType?->name ?? '');
+            $isSick    = str_contains($typeName, 'sick');
+            $isWfh     = str_contains($typeName, 'work from home') || str_contains($typeName, 'working from home') || $typeName === 'wfh';
+            $isMedical = str_contains($typeName, 'medical') || str_contains($typeName, 'appointment') || str_contains($typeName, 'dentist') || str_contains($typeName, 'doctor') || str_contains($typeName, 'hospital');
+
+            if ($isMedical) {
+                // Medical leave types: red corner only, no cell color override
+                $tip = $leave->leaveType?->name ?? 'Medical Appointment';
+                if ($leave->reason) $tip .= ': ' . $leave->reason;
+                return ['s' => 'medical', 'c' => null, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => true];
+            }
+
+            $status = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
+            $tip    = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
             if ($leave->reason) $tip .= ': ' . $leave->reason;
             // Use the leave type's configured color as the cell background
             return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => false];
