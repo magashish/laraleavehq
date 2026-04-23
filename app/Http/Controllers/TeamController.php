@@ -267,7 +267,7 @@ class TeamController extends Controller
 
             $typeName  = strtolower($leave->leaveType?->name ?? '');
             $isSick    = str_contains($typeName, 'sick');
-            $isWfh     = str_contains($typeName, 'work from home') || str_contains($typeName, 'working from home') || $typeName === 'wfh';
+            $isWfh     = str_contains($typeName, 'wfh') || str_contains($typeName, 'work from home') || str_contains($typeName, 'working from home');
             $isMedical = str_contains($typeName, 'medical') || str_contains($typeName, 'appointment') || str_contains($typeName, 'dentist') || str_contains($typeName, 'doctor') || str_contains($typeName, 'hospital');
 
             if ($isMedical) {
