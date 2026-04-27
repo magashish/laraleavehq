@@ -67,7 +67,8 @@
                 @elseif(!$todayCheckin->signed_out_at)
                     <form method="POST" action="{{ route('checkin.checkout') }}">
                         @csrf
-                        <button type="submit" class="btn btn-outline btn-sm">Sign out</button>
+                        <button type="submit" class="btn btn-outline btn-sm"
+                                onclick="return confirm('End your working day and sign out of attendance?')">End day</button>
                     </form>
                 @else
                     <form method="POST" action="{{ route('checkin.store') }}">
