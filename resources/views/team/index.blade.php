@@ -541,10 +541,8 @@ function teamOverview() {
         isLeaveCell(s) { return s === 'leave' || s === 'sick' || s.startsWith('medical'); },
         cellLbl(cell) {
             if (cell.booked && !cell.is_medical && cell.loc) {
-                // WFH leave type OR employee's base location is WFH → show "WFH"
-                if (cell.s === 'wfh' || cell.loc === 'wfh') return 'WFH';
-                if (cell.loc === 'remote') return 'Re';
-                return ''; // other leave cells: colour only, no text
+                if (cell.s === 'wfh') return 'WFH'; // WFH leave type only
+                return ''; // all other leave: colour only, no text
             }
             if (cell.booked && cell.loc) {
                 return {office:'In', wfh:'WFH', remote:'Re'}[cell.loc] || 'In';
