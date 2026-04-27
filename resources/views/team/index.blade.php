@@ -5,14 +5,14 @@
 .tp.active { background:#fff;color:#1a1a1a;border-color:#aaa;font-weight:500; }
 .ov-stat { background:#f5f5f3;border-radius:10px;padding:14px 16px; }
 .pill { font-size:10px;padding:3px 9px;border-radius:99px;font-weight:500;white-space:nowrap; }
-.p-in  { background:#ddeeff;color:#1558a0; }
-.p-re  { background:#d8f5ec;color:#0d6648; }
+.p-in  { background:#FAF9F6;color:#555;border:1px solid #e8e4dc; }
+.p-re  { background:#ede9fe;color:#5b21b6; }
 .p-le  { background:#efefed;color:#555; }
 .p-si  { background:#fde8e8;color:#a02020; }
 .p-off { background:#f0f0ee;color:#999; }
-.p-hol { background:#ede9fe;color:#5b21b6; }
+.p-hol { background:#ddeeff;color:#1558a0; }
 .p-med { background:#fff0d0;color:#7a4800; }
-.p-wfh { background:#d8f5ec;color:#0d6648; }
+.p-wfh { background:#ede9fe;color:#5b21b6; }
 .day-cell { width:32px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
 .dc-in   { background:#FAF9F6; }   .dc-re  { background:#ede9fe; }
 .dc-le   { background:#efefed; }  .dc-si  { background:#fde8e8; }
