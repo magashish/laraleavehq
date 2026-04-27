@@ -42,7 +42,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Leave type</label>
-                        <select name="leave_type_id" class="form-select">
+                        <select name="leave_type_id" class="form-select" required>
                             <option value="">— Select type —</option>
                             @foreach($leaveTypes as $lt)
                                 <option value="{{ $lt->id }}">{{ $lt->name }}</option>
