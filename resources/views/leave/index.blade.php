@@ -221,7 +221,7 @@
                             <td>
                                 <template x-if="l.leave_type">
                                     <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;"
-                                          :style="'background:' + l.leave_type.color + '22;color:' + l.leave_type.color"
+                                          :style="'background:' + l.leave_type.color + '33'"
                                           x-text="l.leave_type.name">
                                     </span>
                                 </template>
