@@ -10,7 +10,7 @@ body {
 .app { display: flex; height: 100vh; overflow: hidden; }
 
 /* Sidebar */
-.sidebar { width: 220px; background: #83acdb; color: #e8e4dc; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar { width: 220px; background: #22485e; color: #e8e4dc; display: flex; flex-direction: column; flex-shrink: 0; }
 .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 .sidebar-logo h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.5px; color: #fff; }
 .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
