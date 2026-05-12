@@ -228,7 +228,7 @@
                                 </div>
                                 <template x-for="(cell,di) in p.week" :key="di">
                                     <div class="day-cell" :class="[cellBgCls(cell), di===todayIdx ? 'today-col' : '', cell.is_medical ? 'has-tip' : '']"
-                                         :style="(cell.booked && !cell.is_medical && cell.c) ? 'background:'+cell.c+'55' : ''"
+                                         :style="(cell.booked && !cell.is_medical && cell.c && cell.s !== 'wfh') ? 'background:'+cell.c+'55' : ''"
                                          @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                          @mouseleave="hideCellTip()">
                                         <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
@@ -407,7 +407,7 @@
                                         <template x-for="(cell, i) in p.dayGrid" :key="i">
                                             <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
                                                 <div class="day-cell" :class="[cellBgCls(cell), cell.is_medical ? 'has-tip' : '']"
-                                                     :style="(cell.booked && !cell.is_medical && cell.c) ? 'background:'+cell.c+'55' : ''"
+                                                     :style="(cell.booked && !cell.is_medical && cell.c && cell.s !== 'wfh') ? 'background:'+cell.c+'55' : ''"
                                                      @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                                      @mouseleave="hideCellTip()">
                                                     <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
@@ -485,7 +485,7 @@
                                 <template x-for="(cell, i) in p.monthGrid" :key="i">
                                     <td style="padding:3px 1px;border-bottom:1px solid #f5f5f3;">
                                         <div class="day-cell" :class="[cellBgCls(cell), cell.is_medical ? 'has-tip' : '']"
-                                             :style="(cell.booked && !cell.is_medical && cell.c) ? 'background:'+cell.c+'55' : ''"
+                                             :style="(cell.booked && !cell.is_medical && cell.c && cell.s !== 'wfh') ? 'background:'+cell.c+'55' : ''"
                                              @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                              @mouseleave="hideCellTip()">
                                             <span style="font-size:9px;font-weight:500;" :class="cellLblCls(cell)" x-text="cellLbl(cell)"></span>
@@ -550,6 +550,7 @@ function teamOverview() {
             return this.dayLbl(cell.s);
         },
         cellBgCls(cell) {
+            if (cell.s === 'wfh') return 'dc-wfh';
             const loc = (cell.booked && cell.loc) ? cell.loc : cell.s;
             if (loc === 'holiday') return 'dc-hol';
             if (loc === 'wfh')     return 'dc-wfh';
