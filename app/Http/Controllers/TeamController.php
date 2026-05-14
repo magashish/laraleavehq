@@ -251,7 +251,12 @@ class TeamController extends Controller
                 ?? $leaves->first(fn($l) => str_contains(strtolower($l->leaveType?->name ?? ''), 'sick'))
                 ?? $leaves->first();
             $color  = $leave->leaveType?->color;
-            $empLoc = $emp->work_location ?? 'office';
+            // If there's a WFH leave on the same day, use that as the effective location
+            $wfhLeaveOnDay = $leaves->first(function ($l) {
+                $n = strtolower($l->leaveType?->name ?? '');
+                return str_contains($n, 'wfh') || str_contains($n, 'work from home') || str_contains($n, 'working from home');
+            });
+            $empLoc = $wfhLeaveOnDay ? 'wfh' : ($emp->work_location ?? 'office');
 
             if ($leave->is_short_leave) {
                 $part   = $leave->short_leave_part;
