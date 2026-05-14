@@ -147,10 +147,16 @@ class LeaveController extends Controller
             }
         }
 
-        // Department concurrency check (skip if admin_override)
+        // Department concurrency check (skip if admin_override or WFH/location leave type)
         $adminOverride = $user->isAdmin() && $request->boolean('admin_override');
 
-        if (!$adminOverride) {
+        $leaveTypeForCheck = LeaveType::find($validated['leave_type_id']);
+        $leaveTypeName     = strtolower($leaveTypeForCheck?->name ?? '');
+        $isWfhLeaveType    = str_contains($leaveTypeName, 'wfh')
+                          || str_contains($leaveTypeName, 'work from home')
+                          || str_contains($leaveTypeName, 'working from home');
+
+        if (!$adminOverride && !$isWfhLeaveType) {
             $conflicts = $this->checkDepartmentConflicts($employee, $validated['start_date'], $validated['end_date']);
             if ($conflicts) {
                 return back()->withErrors(['start_date' => $conflicts])->withInput();
@@ -206,10 +212,14 @@ class LeaveController extends Controller
             'admin_override' => 'boolean',
         ]);
 
-        // Department concurrency check when approving (skip if admin_override)
-        $adminOverride = $user->isAdmin() && $request->boolean('admin_override');
+        // Department concurrency check when approving (skip if admin_override or WFH/location leave type)
+        $adminOverride  = $user->isAdmin() && $request->boolean('admin_override');
+        $leaveTypeName  = strtolower($leave->leaveType?->name ?? '');
+        $isWfhLeaveType = str_contains($leaveTypeName, 'wfh')
+                       || str_contains($leaveTypeName, 'work from home')
+                       || str_contains($leaveTypeName, 'working from home');
 
-        if ($validated['status'] === 'approved' && !$adminOverride) {
+        if ($validated['status'] === 'approved' && !$adminOverride && !$isWfhLeaveType) {
             $conflicts = $this->checkDepartmentConflicts(
                 $leave->employee,
                 $leave->start_date->toDateString(),
