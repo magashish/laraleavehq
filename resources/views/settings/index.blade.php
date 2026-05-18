@@ -9,7 +9,7 @@
 }
 </style>
 <div class="page" x-data="{
-    tab: 'employees',
+    tab: '{{ request('tab', 'employees') }}',
     showEmpModal: false,
     showEditEmpModal: false,
     showBHModal: false,
@@ -17,11 +17,13 @@
     showEditLTModal: false,
     showDeptModal: false,
     showEditDeptModal: false,
+    showCheckinModal: false,
     empColor: '#38bdf8',
     editEmpColor: '#38bdf8',
     editEmp: {},
     editLT: {},
     editDept: {},
+    editCheckin: {},
 }">
 
     {{-- ── Add Employee Modal ── --}}
@@ -347,6 +349,11 @@
         <div class="tab" :class="tab === 'bankholidays' ? 'active' : ''" @click="tab = 'bankholidays'">
             Public Holidays
         </div>
+        @if(Auth::user()->isAdmin())
+        <div class="tab" :class="tab === 'attendance' ? 'active' : ''" @click="tab = 'attendance'">
+            Attendance
+        </div>
+        @endif
     </div>
 
     {{-- ── Employees Tab ── --}}
@@ -661,6 +668,92 @@
             @endif
         </div>
     </div>
+
+    {{-- ── Attendance Tab (admin only) ── --}}
+    @if(Auth::user()->isAdmin())
+    <div x-show="tab === 'attendance'">
+        <div class="card">
+            <div class="card-title" style="margin-bottom:12px;">
+                Attendance Records
+            </div>
+
+            {{-- Date filter --}}
+            <form method="GET" action="{{ route('settings.index') }}" style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+                <input type="hidden" name="tab" value="attendance">
+                <input type="date" name="attendance_date" value="{{ $attendanceDate }}" class="form-input" style="width:180px;">
+                <button type="submit" class="btn btn-primary btn-sm">View</button>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Sign in</th>
+                        <th>Sign out</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($employees as $emp)
+                        @php $cr = $checkins->get($emp->id); @endphp
+                        <tr>
+                            <td>
+                                <div style="font-weight:500;">{{ $emp->name }}</div>
+                                <div style="font-size:11px;color:#888;">{{ $emp->role }}</div>
+                            </td>
+                            <td style="font-size:13px;">
+                                {{ $cr ? $cr->checked_in_at->format('H:i') : '—' }}
+                            </td>
+                            <td style="font-size:13px;">
+                                {{ ($cr && $cr->signed_out_at) ? $cr->signed_out_at->format('H:i') : '—' }}
+                            </td>
+                            <td style="text-align:right;">
+                                @if($cr)
+                                    <button class="btn btn-outline btn-sm"
+                                            @click="editCheckin = { id: {{ $cr->id }}, name: '{{ addslashes($emp->name) }}', date: '{{ $attendanceDate }}', in: '{{ $cr->checked_in_at->format('H:i') }}', out: '{{ $cr->signed_out_at ? $cr->signed_out_at->format('H:i') : '' }}' }; showCheckinModal = true">
+                                        Edit
+                                    </button>
+                                @else
+                                    <span style="font-size:12px;color:#bbb;">No record</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Edit Checkin Modal --}}
+    <template x-if="showCheckinModal">
+        <div class="modal-overlay" @click.self="showCheckinModal = false">
+            <div class="modal">
+                <h3>Edit Attendance</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">
+                    <span x-text="editCheckin.name"></span> &bull; <span x-text="editCheckin.date"></span>
+                </p>
+                <form method="POST" :action="'/checkin/' + editCheckin.id">
+                    @csrf
+                    @method('PATCH')
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Sign in time</label>
+                            <input type="time" name="checked_in_at" class="form-input" :value="editCheckin.in" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sign out time <span style="color:#aaa;">(optional)</span></label>
+                            <input type="time" name="signed_out_at" class="form-input" :value="editCheckin.out">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                        <button type="button" class="btn btn-outline" @click="showCheckinModal = false">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+    @endif
 
 </div>
 </x-app-layout>

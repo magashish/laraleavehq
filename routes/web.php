@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Daily attendance
     Route::post('/checkin',  [CheckinController::class, 'store'])->name('checkin.store');
     Route::post('/checkout', [CheckinController::class, 'checkout'])->name('checkin.checkout');
+    Route::patch('/checkin/{checkin}', [CheckinController::class, 'update'])->name('checkin.update');
 
     // Leave management
     Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');

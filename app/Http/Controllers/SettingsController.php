@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BankHoliday;
+use App\Models\DailyCheckin;
 use App\Models\Department;
 use App\Models\LeaveType;
 use App\Models\User;
@@ -43,7 +44,13 @@ class SettingsController extends Controller
         $leaveTypes    = LeaveType::orderBy('name')->get();
         $departments   = Department::with('users')->orderBy('name')->get();
 
-        return view('settings.index', compact('employees', 'bankHolidays', 'leaveTypes', 'departments'));
+        $attendanceDate = request('attendance_date', today()->toDateString());
+        $checkins = DailyCheckin::with('user')
+            ->where('date', $attendanceDate)
+            ->get()
+            ->keyBy('user_id');
+
+        return view('settings.index', compact('employees', 'bankHolidays', 'leaveTypes', 'departments', 'attendanceDate', 'checkins'));
     }
 
     // ── Employees ─────────────────────────────────────────────────────────────
