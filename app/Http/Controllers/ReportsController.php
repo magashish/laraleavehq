@@ -42,14 +42,13 @@ class ReportsController extends Controller
                 $results = $checkins->filter(function ($c) use ($lateThreshold) {
                     return $c->checked_in_at->format('H:i:s') > $lateThreshold;
                 })->map(function ($c) {
-                    $minutesLate = $c->checked_in_at->diffInMinutes(
-                        Carbon::parse($c->date->toDateString() . ' 09:00:00')
-                    );
+                    $minutesLate = (int) Carbon::parse($c->date->toDateString() . ' 09:00:00')
+                        ->diffInMinutes($c->checked_in_at);
                     return [
                         'employee'     => $c->user->name,
                         'date'         => $c->date->format('l, j M Y'),
                         'signed_in_at' => $c->checked_in_at->format('H:i'),
-                        'minutes_late' => $minutesLate,
+                        'minutes_late' => max(1, $minutesLate),
                     ];
                 })->values();
 
