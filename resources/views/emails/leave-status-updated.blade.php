@@ -34,6 +34,7 @@
         .rejected .status-banner { background: #fdf2f2; color: #000; border-left: 3px solid #d9534f; }
         .cta { text-align: center; padding: 8px 24px 32px; }
         .btn { display: inline-block; background: #83acdb; color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 8px; font-size: 14px; font-weight: 600; letter-spacing: 0.2px; }
+        .btn-secondary { display: inline-block; background: #ffffff; color: #22485e; text-decoration: none; padding: 11px 28px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1.5px solid #22485e; margin-top: 10px; }
         .footer { text-align: center; padding: 20px; background: #f5f9ff; border-top: 1px solid #e2eaf3; color: #999; font-size: 12px; }
         .footer strong { color: #000; }
     </style>
@@ -103,7 +104,12 @@
     </div>
 
     <div class="cta">
-        <a href="{{ url('/leave') }}" class="btn">View My Leave</a>
+        <a href="{{ url('/leave') }}" class="btn">View My Leave</a><br>
+        @php
+            $calFrom = $leave->start_date->copy()->subDays(7)->toDateString();
+            $calTo   = $leave->end_date->copy()->addDays(7)->toDateString();
+        @endphp
+        <a href="{{ url('/team?from=' . $calFrom . '&to=' . $calTo) }}" class="btn-secondary">View Team Calendar</a>
     </div>
 
     <div class="footer">
