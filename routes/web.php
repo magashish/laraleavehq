@@ -34,6 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Reports (managers only)
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportsController::class, 'export'])->name('reports.export');
 
     // Settings (managers only)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

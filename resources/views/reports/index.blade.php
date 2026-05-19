@@ -75,6 +75,10 @@
             <div class="card-title" style="margin-bottom:12px;">
                 Late arrivals — {{ $summary['employee'] }}
                 <span style="font-size:12px;font-weight:400;color:#888;">{{ $summary['from'] }} to {{ $summary['to'] }}</span>
+                <a href="{{ route('reports.export', ['report' => $reportType, 'employee_id' => $employeeId, 'from' => $from, 'to' => $to]) }}"
+                   class="btn btn-outline btn-sm" style="margin-left:auto;">
+                    &#8595; Export CSV
+                </a>
             </div>
 
             @if($results->isEmpty())
