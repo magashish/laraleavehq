@@ -4,6 +4,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/team/custom', [TeamController::class, 'custom'])->name('team.custom');
     Route::post('/team/notices', [TeamController::class, 'storeNotice'])->name('team.notices.store');
     Route::delete('/team/notices/{notice}', [TeamController::class, 'destroyNotice'])->name('team.notices.destroy');
+
+    // Reports (managers only)
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
 
     // Settings (managers only)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
