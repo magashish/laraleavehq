@@ -52,12 +52,17 @@ class ReportsController extends Controller
                     ];
                 })->values();
 
+                $totalMinutesLate = $results->sum('minutes_late');
+
                 $summary = [
-                    'total_late'   => $results->count(),
-                    'total_days'   => $checkins->count(),
-                    'employee'     => $employeeId ? User::find($employeeId)?->name : 'All employees',
-                    'from'         => Carbon::parse($from)->format('j M Y'),
-                    'to'           => Carbon::parse($to)->format('j M Y'),
+                    'total_late'          => $results->count(),
+                    'total_days'          => $checkins->count(),
+                    'total_minutes_late'  => $totalMinutesLate,
+                    'total_hours_late'    => floor($totalMinutesLate / 60),
+                    'remaining_mins_late' => $totalMinutesLate % 60,
+                    'employee'            => $employeeId ? User::find($employeeId)?->name : 'All employees',
+                    'from'                => Carbon::parse($from)->format('j M Y'),
+                    'to'                  => Carbon::parse($to)->format('j M Y'),
                 ];
             }
         }

@@ -58,6 +58,17 @@
                 </div>
                 <div class="stat-sub">{{ $summary['employee'] }}</div>
             </div>
+            <div class="stat-card" style="flex:1;min-width:140px;">
+                <div class="stat-label">Total time late</div>
+                <div class="stat-val" style="color:{{ $summary['total_minutes_late'] > 0 ? '#ef4444' : '#059669' }};">
+                    @if($summary['total_hours_late'] > 0)
+                        {{ $summary['total_hours_late'] }}h {{ $summary['remaining_mins_late'] }}m
+                    @else
+                        {{ $summary['remaining_mins_late'] }}m
+                    @endif
+                </div>
+                <div class="stat-sub">combined late time</div>
+            </div>
         </div>
 
         <div class="card">
