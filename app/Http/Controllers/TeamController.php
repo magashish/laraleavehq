@@ -38,6 +38,11 @@ class TeamController extends Controller
         $viewMonthLabel = $viewMonth->format('F Y');
         $isCurrentMonth = $viewMonth->isSameMonth(now());
         $initialView    = $request->get('view', 'today');
+        $preloadFrom    = $request->get('from', '');
+        $preloadTo      = $request->get('to', '');
+        if ($preloadFrom && $preloadTo) {
+            $initialView = 'custom';
+        }
 
         // Colour to use for permanent-WFH cells — matches the WFH leave type setting
         $wfhLeaveColor  = LeaveType::where('name', 'like', '%work from home%')
@@ -103,7 +108,8 @@ class TeamController extends Controller
 
         return view('team.index', compact(
             'teamData', 'notices', 'todayIdx', 'weekLabels', 'managerNotices', 'allEmployees',
-            'monthDayInfo', 'prevMonth', 'nextMonth', 'viewMonthLabel', 'isCurrentMonth', 'initialView'
+            'monthDayInfo', 'prevMonth', 'nextMonth', 'viewMonthLabel', 'isCurrentMonth', 'initialView',
+            'preloadFrom', 'preloadTo'
         ));
     }
 

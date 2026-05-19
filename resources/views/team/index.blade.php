@@ -42,7 +42,7 @@
 }
 </style>
 
-<div class="page" x-data="teamOverview()">
+<div class="page" x-data="teamOverview()" x-init="customFrom && customTo && applyCustom()">
 
     {{-- Shared cell tooltip --}}
     <div class="cell-tip" x-show="cellTip.show" x-text="cellTip.text"
@@ -529,8 +529,8 @@ function teamOverview() {
         weekLabels,
         todayIdx,
         monthDayInfo,
-        customFrom: '',
-        customTo: '',
+        customFrom: '{{ $preloadFrom }}',
+        customTo: '{{ $preloadTo }}',
         customData: null,
         customLoading: false,
         cellTip: { show: false, text: '', x: 0, y: 0 },
