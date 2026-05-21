@@ -640,10 +640,11 @@ function teamOverview() {
             const total = this.teamData.length;
             const c = this.seg;
             if (this.view === 'today') return [
-                {label:'Team size', value:total,           sub:'total employees',                      color:'#1a1a1a'},
+                {label:'Team size', value:total,           sub:'total employees',                         color:'#1a1a1a'},
                 {label:'In office', value:c.office,        sub:Math.round(c.office/total*100)+'% of team', color:'#3a7dcc'},
                 {label:'Remote',    value:c.remote,        sub:Math.round(c.remote/total*100)+'% of team', color:'#1d9e75'},
-                {label:'Off today', value:c.leave+c.sick,  sub:c.leave+' leave · '+c.sick+' sick',    color:'#c03030'},
+                {label:'WFH',       value:c.wfh,           sub:Math.round(c.wfh/total*100)+'% of team',    color:'#1d9e75'},
+                {label:'Off today', value:c.leave+c.sick,  sub:c.leave+' leave · '+c.sick+' sick',         color:'#c03030'},
             ];
             if (this.view === 'week') return [
                 {label:'Team size',       value:total,          sub:'total employees',          color:'#1a1a1a'},
