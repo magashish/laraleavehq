@@ -376,8 +376,9 @@ class TeamController extends Controller
         $nonLeave    = max(0, $workingDays - $leave - $sick);
         $office      = $emp->work_location === 'office' ? $nonLeave : 0;
         $remote      = $emp->work_location === 'remote' ? $nonLeave : 0;
+        $wfh         = $emp->work_location === 'wfh'    ? $nonLeave : 0;
 
-        return compact('office', 'remote', 'leave', 'sick');
+        return compact('office', 'remote', 'wfh', 'leave', 'sick');
     }
 
     private function buildNotices(Collection $employees, string $today): array
