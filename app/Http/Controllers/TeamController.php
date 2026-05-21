@@ -185,6 +185,7 @@ class TeamController extends Controller
             $nonLeave    = max(0, $workingDays - $leave - $sick);
             $office      = $emp->work_location === 'office' ? $nonLeave : 0;
             $remote      = $emp->work_location === 'remote' ? $nonLeave : 0;
+            $wfh         = $emp->work_location === 'wfh'    ? $nonLeave : 0;
 
             return [
                 'id'       => $emp->id,
@@ -195,6 +196,7 @@ class TeamController extends Controller
                 'photo_url'=> $emp->photoUrl(),
                 'office'   => $office,
                 'remote'   => $remote,
+                'wfh'      => $wfh,
                 'leave'    => $leave,
                 'sick'     => $sick,
                 'dayGrid'  => $this->getMonthDayStatuses($emp, $from, $to, $publicHolidays, $wfhLeaveColor),
@@ -204,6 +206,7 @@ class TeamController extends Controller
         $totals = [
             'office' => $teamData->sum('office'),
             'remote' => $teamData->sum('remote'),
+            'wfh'    => $teamData->sum('wfh'),
             'leave'  => $teamData->sum('leave'),
             'sick'   => $teamData->sum('sick'),
         ];

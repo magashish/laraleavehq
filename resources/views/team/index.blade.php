@@ -615,6 +615,13 @@ function teamOverview() {
                 this.teamData.forEach(p => bump(p.status));
             } else if (this.view === 'week') {
                 this.teamData.forEach(p => p.week.forEach(cell => bump(cell.s)));
+            } else if (this.view === 'custom' && this.customData) {
+                const t = this.customData.totals;
+                c.office = t.office || 0;
+                c.remote = t.remote || 0;
+                c.wfh    = t.wfh    || 0;
+                c.leave  = t.leave  || 0;
+                c.sick   = t.sick   || 0;
             } else {
                 this.teamData.forEach(p => {
                     c.office += p.month.office || 0;
@@ -654,11 +661,12 @@ function teamOverview() {
                 {label:'WFH days',        value:c.wfh,          sub:'across the team',                    color:'#1d9e75'},
                 {label:'Days off',        value:c.leave+c.sick, sub:c.leave+' leave · '+c.sick+' sick',   color:'#c03030'},
             ];
+            const periodSub = this.view === 'custom' ? 'in date range' : 'total this month';
             return [
                 {label:'Team size',   value:total,          sub:'total employees',                        color:'#1a1a1a'},
-                {label:'Office days', value:c.office,       sub:'total this month',                       color:'#3a7dcc'},
-                {label:'Remote days', value:c.remote,       sub:'total this month',                       color:'#1d9e75'},
-                {label:'WFH days',    value:c.wfh,          sub:'total this month',                       color:'#1d9e75'},
+                {label:'Office days', value:c.office,       sub:periodSub,                                color:'#3a7dcc'},
+                {label:'Remote days', value:c.remote,       sub:periodSub,                                color:'#1d9e75'},
+                {label:'WFH days',    value:c.wfh,          sub:periodSub,                                color:'#1d9e75'},
                 {label:'Days off',    value:c.leave+c.sick, sub:c.leave+' leave · '+c.sick+' sick',       color:'#c03030'},
             ];
         },
