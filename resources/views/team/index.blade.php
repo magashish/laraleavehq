@@ -74,7 +74,7 @@
     </div>
 
     {{-- ── Stats row ── --}}
-    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem;">
         <template x-for="s in stats" :key="s.label">
             <div class="ov-stat">
                 <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;" x-text="s.label"></div>
@@ -619,6 +619,7 @@ function teamOverview() {
                 this.teamData.forEach(p => {
                     c.office += p.month.office || 0;
                     c.remote += p.month.remote || 0;
+                    c.wfh    += p.month.wfh    || 0;
                     c.leave  += p.month.leave  || 0;
                     c.sick   += p.month.sick   || 0;
                 });
@@ -647,16 +648,18 @@ function teamOverview() {
                 {label:'Off today', value:c.leave+c.sick,  sub:c.leave+' leave · '+c.sick+' sick',         color:'#c03030'},
             ];
             if (this.view === 'week') return [
-                {label:'Team size',       value:total,          sub:'total employees',          color:'#1a1a1a'},
-                {label:'In office days',  value:c.office,       sub:'across the team',          color:'#3a7dcc'},
-                {label:'Remote days',     value:c.remote,       sub:'across the team',          color:'#1d9e75'},
-                {label:'Days off',        value:c.leave+c.sick, sub:c.leave+' leave · '+c.sick+' sick', color:'#c03030'},
+                {label:'Team size',       value:total,          sub:'total employees',                    color:'#1a1a1a'},
+                {label:'In office days',  value:c.office,       sub:'across the team',                    color:'#3a7dcc'},
+                {label:'Remote days',     value:c.remote,       sub:'across the team',                    color:'#1d9e75'},
+                {label:'WFH days',        value:c.wfh,          sub:'across the team',                    color:'#1d9e75'},
+                {label:'Days off',        value:c.leave+c.sick, sub:c.leave+' leave · '+c.sick+' sick',   color:'#c03030'},
             ];
             return [
-                {label:'Team size',   value:total,          sub:'total employees',        color:'#1a1a1a'},
-                {label:'Office days', value:c.office,       sub:'total this month',       color:'#3a7dcc'},
-                {label:'Remote days', value:c.remote,       sub:'total this month',       color:'#1d9e75'},
-                {label:'Days off',    value:c.leave+c.sick, sub:c.leave+' leave · '+c.sick+' sick', color:'#c03030'},
+                {label:'Team size',   value:total,          sub:'total employees',                        color:'#1a1a1a'},
+                {label:'Office days', value:c.office,       sub:'total this month',                       color:'#3a7dcc'},
+                {label:'Remote days', value:c.remote,       sub:'total this month',                       color:'#1d9e75'},
+                {label:'WFH days',    value:c.wfh,          sub:'total this month',                       color:'#1d9e75'},
+                {label:'Days off',    value:c.leave+c.sick, sub:c.leave+' leave · '+c.sick+' sick',       color:'#c03030'},
             ];
         },
 
