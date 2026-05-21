@@ -36,11 +36,17 @@ class DashboardController extends Controller
         $offToday = null;
         if ($user->isManager()) {
             $pendingApprovalCount = LeaveRequest::where('status', 'pending')->count();
-            $offToday = LeaveRequest::with('employee')
+            $offToday = LeaveRequest::with('employee', 'leaveType')
                 ->where('status', 'approved')
                 ->where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
                 ->get()
+                ->filter(function ($l) {
+                    $name = strtolower($l->leaveType?->name ?? '');
+                    return !str_contains($name, 'wfh')
+                        && !str_contains($name, 'work from home')
+                        && !str_contains($name, 'working from home');
+                })
                 ->map(fn($l) => $l->employee)
                 ->unique('id')
                 ->values();
