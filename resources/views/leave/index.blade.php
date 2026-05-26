@@ -179,13 +179,74 @@
                 Rejected <span style="font-size:11px;color:#aaa;" x-text="'(' + counts.rejected + ')'"></span>
             </div>
             <div class="tab" :class="tab === 'all' ? 'active' : ''" @click="tab = 'all'">All</div>
+            @if(Auth::user()->isManager())
+            <div class="tab" :class="tab === 'allowances' ? 'active' : ''" @click="tab = 'allowances'">Allowances</div>
+            @endif
         </div>
         <button class="btn btn-primary btn-sm" style="margin-left:12px;margin-bottom:20px;" @click="showModal = true">
             + {{ Auth::user()->isManager() ? 'Add Leave' : 'Request Leave' }}
         </button>
     </div>
 
-    <div class="card">
+    @if(Auth::user()->isManager())
+    <div class="card" x-show="tab === 'allowances'">
+        @if($allEmployees->isEmpty())
+            <div class="empty-state">No employees found.</div>
+        @else
+        <div class="leave-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th style="text-align:center;">Allowed</th>
+                    <th style="text-align:center;">Used</th>
+                    <th style="text-align:center;">Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($allEmployees as $emp)
+                    @php
+                        $used      = $emp->leaveRequests->sum('days');
+                        $remaining = max(0, $emp->days_allowed - $used);
+                        $pct       = $emp->days_allowed > 0 ? round(($used / $emp->days_allowed) * 100) : 0;
+                    @endphp
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                @if($emp->photoUrl())
+                                    <img src="{{ $emp->photoUrl() }}" alt="{{ $emp->name }}"
+                                         style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                @else
+                                    <div class="avatar" style="width:28px;height:28px;font-size:10px;flex-shrink:0;background:{{ $emp->color ?? '#38bdf8' }}33;color:{{ $emp->color ?? '#38bdf8' }}">
+                                        {{ $emp->initials() }}
+                                    </div>
+                                @endif
+                                <div>
+                                    <div style="font-weight:500;font-size:13px;">{{ $emp->name }}</div>
+                                    <div style="font-size:11px;color:#888;">{{ $emp->roleBadgeLabel() }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align:center;font-size:13px;">{{ $emp->days_allowed }}</td>
+                        <td style="text-align:center;font-size:13px;">{{ number_format($used, 1) }}</td>
+                        <td style="text-align:center;">
+                            <span style="font-size:13px;font-weight:600;color:{{ $remaining <= 5 ? '#ef4444' : ($remaining <= 10 ? '#f97316' : '#059669') }};">
+                                {{ number_format($remaining, 1) }}
+                            </span>
+                            <div style="margin-top:4px;background:#f0f0f0;border-radius:999px;height:4px;width:80px;display:inline-block;vertical-align:middle;margin-left:6px;">
+                                <div style="height:4px;border-radius:999px;width:{{ $pct }}%;background:{{ $pct >= 80 ? '#ef4444' : ($pct >= 60 ? '#f97316' : '#38bdf8') }};"></div>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        </div>
+        @endif
+    </div>
+    @endif
+
+    <div class="card" x-show="tab !== 'allowances'">
         <template x-if="filtered.length === 0">
             <div class="empty-state">No <span x-text="tab === 'all' ? '' : tab"></span> leave requests.</div>
         </template>

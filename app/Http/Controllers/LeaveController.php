@@ -36,6 +36,8 @@ class LeaveController extends Controller
                        ->orWhereHas('leaveType', fn($ltq) => $ltq->where('counts_toward_allowance', true));
                 })
             ])->orderBy('name')->get()
+                ->sortBy(fn($emp) => $emp->days_allowed - $emp->leaveRequests->sum('days'))
+                ->values()
             : collect();
 
         $leavesData = $leaves->map(fn($l) => [
