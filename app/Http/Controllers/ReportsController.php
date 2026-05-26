@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DailyCheckin;
+use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\User;
 use Carbon\Carbon;
@@ -17,18 +18,32 @@ class ReportsController extends Controller
 
         $employees  = User::orderBy('name')->get();
         $leaveTypes = LeaveType::orderBy('name')->get();
-        $results    = null;
-        $summary    = null;
-        $leaveData  = null;
+        $results         = null;
+        $summary         = null;
+        $leaveData       = null;
+        $historyData     = null;
+        $historyEmployee = null;
+        $historyLeaveType = null;
 
-        $employeeId = $request->get('employee_id');
-        $from       = $request->get('from');
-        $to         = $request->get('to');
-        $reportType = $request->get('report', 'late');
-        $year       = (int) $request->get('year', now()->year);
-        $years      = range(now()->year, max(now()->year - 4, 2020));
+        $employeeId  = $request->get('employee_id');
+        $leaveTypeId = $request->get('leave_type_id');
+        $from        = $request->get('from');
+        $to          = $request->get('to');
+        $reportType  = $request->get('report', 'late');
+        $year        = (int) $request->get('year', now()->year);
+        $years       = range(now()->year, max(now()->year - 4, 2020));
 
-        if ($reportType === 'leave_summary' && $request->has('report')) {
+        if ($reportType === 'leave_history' && $request->has('report') && $employeeId) {
+            $historyEmployee  = User::findOrFail($employeeId);
+            $historyLeaveType = $leaveTypeId ? LeaveType::find($leaveTypeId) : null;
+
+            $historyData = LeaveRequest::with('leaveType')
+                ->where('employee_id', $employeeId)
+                ->when($leaveTypeId, fn($q) => $q->where('leave_type_id', $leaveTypeId))
+                ->orderBy('start_date')
+                ->get();
+
+        } elseif ($reportType === 'leave_summary' && $request->has('report')) {
             $leaveData = User::with(['leaveRequests' => fn($q) => $q
                 ->where('status', 'approved')
                 ->whereYear('start_date', $year)
@@ -113,7 +128,8 @@ class ReportsController extends Controller
 
         return view('reports.index', compact(
             'employees', 'leaveTypes', 'results', 'summary', 'leaveData',
-            'employeeId', 'from', 'to', 'reportType', 'year', 'years'
+            'historyData', 'historyEmployee', 'historyLeaveType',
+            'employeeId', 'leaveTypeId', 'from', 'to', 'reportType', 'year', 'years'
         ));
     }
 
@@ -126,7 +142,44 @@ class ReportsController extends Controller
         $to         = $request->get('to');
         $reportType = $request->get('report', 'late');
 
-        $year = (int) $request->get('year', now()->year);
+        $year        = (int) $request->get('year', now()->year);
+        $leaveTypeId = $request->get('leave_type_id');
+
+        if ($reportType === 'leave_history') {
+            if (!$employeeId) abort(400);
+
+            $employee  = User::findOrFail($employeeId);
+            $leaveType = $leaveTypeId ? LeaveType::find($leaveTypeId) : null;
+
+            $rows = LeaveRequest::with('leaveType')
+                ->where('employee_id', $employeeId)
+                ->when($leaveTypeId, fn($q) => $q->where('leave_type_id', $leaveTypeId))
+                ->orderBy('start_date')
+                ->get()
+                ->map(fn($lr) => [
+                    'Employee'   => $employee->name,
+                    'Leave Type' => $lr->leaveType?->name ?? 'Annual Leave',
+                    'Start Date' => $lr->start_date->format('j M Y'),
+                    'End Date'   => $lr->end_date->format('j M Y'),
+                    'Days'       => $lr->days,
+                    'Status'     => $lr->status,
+                ]);
+
+            $slug     = str($employee->name)->slug();
+            $typePart = $leaveType ? '-' . str($leaveType->name)->slug() : '';
+            $filename = "leave-history-{$slug}{$typePart}.csv";
+            $headers  = [
+                'Content-Type'        => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            return response()->stream(function () use ($rows) {
+                $handle = fopen('php://output', 'w');
+                if ($rows->isNotEmpty()) fputcsv($handle, array_keys($rows->first()));
+                foreach ($rows as $row) fputcsv($handle, $row);
+                fclose($handle);
+            }, 200, $headers);
+        }
 
         if ($reportType === 'leave_summary') {
             $leaveTypes = LeaveType::orderBy('name')->get();

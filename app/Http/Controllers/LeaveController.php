@@ -29,15 +29,16 @@ class LeaveController extends Controller
         $leaveTypes   = LeaveType::where('is_active', true)->orderBy('name')->get();
 
         $allEmployees = $user->isManager()
-            ? User::orderBy('name')->get()
+            ? User::with(['leaveRequests' => fn($q) => $q
+                ->where('status', 'approved')
+                ->where(function ($sq) {
+                    $sq->whereNull('leave_type_id')
+                       ->orWhereHas('leaveType', fn($ltq) => $ltq->where('counts_toward_allowance', true));
+                })
+            ])->orderBy('name')->get()
+                ->sortBy(fn($emp) => $emp->days_allowed - $emp->leaveRequests->sum('days'))
+                ->values()
             : collect();
-
-        $employeesData = $allEmployees->map(fn($emp) => [
-            'id'            => $emp->id,
-            'name'          => $emp->name,
-            'days_allowed'  => $emp->days_allowed,
-            'has_allowance' => $emp->hasHolidayAllowance(),
-        ]);
 
         $leavesData = $leaves->map(fn($l) => [
             'id'            => $l->id,
@@ -65,7 +66,7 @@ class LeaveController extends Controller
             ],
         ]);
 
-        return view('leave.index', compact('user', 'leaves', 'leavesData', 'bankHolidays', 'allEmployees', 'leaveTypes', 'employeesData'));
+        return view('leave.index', compact('user', 'leaves', 'leavesData', 'bankHolidays', 'allEmployees', 'leaveTypes'));
     }
 
     public function store(Request $request)

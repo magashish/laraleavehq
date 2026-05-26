@@ -21,10 +21,11 @@
                 <select name="report" class="form-select" x-model="report">
                     <option value="late">Late arrivals (after 09:00)</option>
                     <option value="leave_summary">Annual leave summary</option>
+                    <option value="leave_history">Leave history by employee</option>
                 </select>
             </div>
 
-            {{-- Employee & date range — only for late arrivals --}}
+            {{-- Employee (optional) — late arrivals --}}
             <div class="form-group" style="margin:0;min-width:180px;" x-show="report === 'late'">
                 <label class="form-label">Employee</label>
                 <select name="employee_id" class="form-select">
@@ -34,6 +35,8 @@
                     @endforeach
                 </select>
             </div>
+
+            {{-- Date range — late arrivals --}}
             <div class="form-group" style="margin:0;" x-show="report === 'late'">
                 <label class="form-label">From</label>
                 <input type="date" name="from" class="form-input" value="{{ $from }}"
@@ -45,12 +48,32 @@
                        :required="report === 'late'">
             </div>
 
-            {{-- Year — only for leave summary --}}
+            {{-- Year — leave summary --}}
             <div class="form-group" style="margin:0;" x-show="report === 'leave_summary'">
                 <label class="form-label">Year</label>
                 <select name="year" class="form-select" style="width:auto;">
                     @foreach($years as $y)
                         <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Employee (required) + Leave type — leave history --}}
+            <div class="form-group" style="margin:0;min-width:180px;" x-show="report === 'leave_history'">
+                <label class="form-label">Employee <span style="color:#ef4444;">*</span></label>
+                <select name="employee_id" class="form-select" :required="report === 'leave_history'">
+                    <option value="">Select employee…</option>
+                    @foreach($employees as $emp)
+                        <option value="{{ $emp->id }}" {{ $employeeId == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group" style="margin:0;min-width:180px;" x-show="report === 'leave_history'">
+                <label class="form-label">Leave type</label>
+                <select name="leave_type_id" class="form-select">
+                    <option value="">All types</option>
+                    @foreach($leaveTypes as $lt)
+                        <option value="{{ $lt->id }}" {{ ($leaveTypeId ?? '') == $lt->id ? 'selected' : '' }}>{{ $lt->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -229,6 +252,99 @@
                 </tbody>
             </table>
             </div>
+            @endif
+        </div>
+
+    {{-- ── Leave history results ── --}}
+    @elseif($reportType === 'leave_history' && $historyData !== null)
+        @php
+            $empName  = $historyEmployee->name;
+            $typeName = $historyLeaveType?->name ?? 'All types';
+            $approved = $historyData->where('status', 'approved');
+            $usedDays = $approved->sum('days');
+            $showAllowance = $historyLeaveType?->counts_toward_allowance && $historyEmployee->hasHolidayAllowance();
+        @endphp
+
+        @if($showAllowance)
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+                <div class="stat-card" style="flex:1;min-width:120px;">
+                    <div class="stat-label">Allowed</div>
+                    <div class="stat-val">{{ $historyEmployee->days_allowed }}</div>
+                    <div class="stat-sub">days</div>
+                </div>
+                <div class="stat-card" style="flex:1;min-width:120px;">
+                    <div class="stat-label">Used</div>
+                    <div class="stat-val">{{ number_format($usedDays, 1) }}</div>
+                    <div class="stat-sub">approved</div>
+                </div>
+                <div class="stat-card" style="flex:1;min-width:120px;">
+                    @php $remaining = max(0, $historyEmployee->days_allowed - $usedDays); @endphp
+                    <div class="stat-label">Remaining</div>
+                    <div class="stat-val" style="color:{{ $remaining <= 5 ? '#ef4444' : ($remaining <= 10 ? '#f97316' : '#059669') }}">
+                        {{ number_format($remaining, 1) }}
+                    </div>
+                    <div class="stat-sub">days left</div>
+                </div>
+            </div>
+        @endif
+
+        <div class="card">
+            <div class="card-title" style="margin-bottom:12px;">
+                {{ $empName }} — {{ $typeName }}
+                <a href="{{ route('reports.export', ['report' => 'leave_history', 'employee_id' => $employeeId, 'leave_type_id' => $leaveTypeId]) }}"
+                   class="btn btn-outline btn-sm" style="margin-left:auto;">
+                    &#8595; Export CSV
+                </a>
+            </div>
+
+            @if($historyData->isEmpty())
+                <div class="empty-state" style="padding:30px 0;">No leave records found.</div>
+            @else
+                <div class="report-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            @if(!$historyLeaveType)<th>Leave type</th>@endif
+                            <th>Start date</th>
+                            <th>End date</th>
+                            <th style="text-align:center;">Days</th>
+                            <th style="text-align:center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($historyData as $lr)
+                            <tr>
+                                @if(!$historyLeaveType)
+                                    <td>
+                                        @if($lr->leaveType)
+                                            <span style="font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;background:{{ $lr->leaveType->color }}33;color:{{ $lr->leaveType->color }}">
+                                                {{ $lr->leaveType->name }}
+                                            </span>
+                                        @else
+                                            <span style="color:#bbb;font-size:12px;">—</span>
+                                        @endif
+                                    </td>
+                                @endif
+                                <td style="font-size:13px;">{{ $lr->start_date->format('j M Y') }}</td>
+                                <td style="font-size:13px;">{{ $lr->end_date->format('j M Y') }}</td>
+                                <td style="text-align:center;font-weight:500;">{{ $lr->days }}</td>
+                                <td style="text-align:center;">
+                                    @php
+                                        $sc = match($lr->status) {
+                                            'approved' => 'background:#d1fae5;color:#065f46;',
+                                            'rejected' => 'background:#fee2e2;color:#991b1b;',
+                                            default    => 'background:#fef3c7;color:#92400e;',
+                                        };
+                                    @endphp
+                                    <span style="font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;{{ $sc }}">
+                                        {{ $lr->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                </div>
             @endif
         </div>
 

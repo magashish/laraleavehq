@@ -189,99 +189,60 @@
     </div>
 
     @if(Auth::user()->isManager())
-    <div class="card" x-show="tab === 'allowances'" x-data="allowancesTab()">
-        {{-- Filters --}}
-        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;align-items:flex-end;">
-            <div class="form-group" style="margin:0;min-width:180px;">
-                <label class="form-label">Leave type</label>
-                <select class="form-select" x-model="filterType">
-                    <option value="">All types</option>
-                    @foreach($leaveTypes as $lt)
-                        <option value="{{ $lt->id }}">{{ $lt->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group" style="margin:0;min-width:180px;">
-                <label class="form-label">Employee</label>
-                <select class="form-select" x-model="filterEmp">
-                    <option value="">All employees</option>
-                    @foreach($allEmployees as $emp)
-                        <option value="{{ $emp->id }}">{{ $emp->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+    <div class="card" x-show="tab === 'allowances'">
+        @if($allEmployees->isEmpty())
+            <div class="empty-state">No employees found.</div>
+        @else
+        <div class="leave-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th style="text-align:center;">Allowed</th>
+                    <th style="text-align:center;">Used</th>
+                    <th style="text-align:center;">Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($allEmployees as $emp)
+                    @php
+                        $used      = $emp->leaveRequests->sum('days');
+                        $remaining = max(0, $emp->days_allowed - $used);
+                        $pct       = $emp->days_allowed > 0 ? round(($used / $emp->days_allowed) * 100) : 0;
+                    @endphp
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                @if($emp->photoUrl())
+                                    <img src="{{ $emp->photoUrl() }}" alt="{{ $emp->name }}"
+                                         style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                @else
+                                    <div class="avatar" style="width:28px;height:28px;font-size:10px;flex-shrink:0;background:{{ $emp->color ?? '#38bdf8' }}33;color:{{ $emp->color ?? '#38bdf8' }}">
+                                        {{ $emp->initials() }}
+                                    </div>
+                                @endif
+                                <div>
+                                    <div style="font-weight:500;font-size:13px;">{{ $emp->name }}</div>
+                                    <div style="font-size:11px;color:#888;">{{ $emp->roleBadgeLabel() }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align:center;font-size:13px;">{{ $emp->days_allowed }}</td>
+                        <td style="text-align:center;font-size:13px;">{{ number_format($used, 1) }}</td>
+                        <td style="text-align:center;">
+                            <span style="font-size:13px;font-weight:600;color:{{ $remaining <= 5 ? '#ef4444' : ($remaining <= 10 ? '#f97316' : '#059669') }};">
+                                {{ number_format($remaining, 1) }}
+                            </span>
+                            <div style="margin-top:4px;background:#f0f0f0;border-radius:999px;height:4px;width:80px;display:inline-block;vertical-align:middle;margin-left:6px;">
+                                <div style="height:4px;border-radius:999px;width:{{ $pct }}%;background:{{ $pct >= 80 ? '#ef4444' : ($pct >= 60 ? '#f97316' : '#38bdf8') }};"></div>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
         </div>
-
-        {{-- Allowance summary strip (only when specific employee + allowance-bearing type selected) --}}
-        <template x-if="summary">
-            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-                <div class="stat-card" style="flex:1;min-width:100px;">
-                    <div class="stat-label">Allowed</div>
-                    <div class="stat-val" x-text="summary.allowed"></div>
-                    <div class="stat-sub">days</div>
-                </div>
-                <div class="stat-card" style="flex:1;min-width:100px;">
-                    <div class="stat-label">Used</div>
-                    <div class="stat-val" x-text="summary.used.toFixed(1)"></div>
-                    <div class="stat-sub">approved</div>
-                </div>
-                <div class="stat-card" style="flex:1;min-width:100px;">
-                    <div class="stat-label">Remaining</div>
-                    <div class="stat-val"
-                         :style="'color:' + (summary.remaining <= 5 ? '#ef4444' : summary.remaining <= 10 ? '#f97316' : '#059669')"
-                         x-text="summary.remaining.toFixed(1)"></div>
-                    <div class="stat-sub">days left</div>
-                </div>
-            </div>
-        </template>
-
-        {{-- Results table --}}
-        <template x-if="rows.length === 0">
-            <div class="empty-state" style="padding:30px 0;">No leave records match the selected filters.</div>
-        </template>
-        <template x-if="rows.length > 0">
-            <div class="leave-table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <template x-if="!filterEmp"><th>Employee</th></template>
-                            <template x-if="!filterType"><th>Leave type</th></template>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th style="text-align:center;">Days</th>
-                            <th style="text-align:center;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="r in rows" :key="r.id">
-                            <tr>
-                                <template x-if="!filterEmp">
-                                    <td style="font-weight:500;font-size:13px;" x-text="r.employee.name"></td>
-                                </template>
-                                <template x-if="!filterType">
-                                    <td>
-                                        <span x-show="r.leave_type"
-                                              :style="'font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;background:' + (r.leave_type ? r.leave_type.color+'33' : '#eee') + ';color:' + (r.leave_type ? r.leave_type.color : '#666')"
-                                              x-text="r.leave_type ? r.leave_type.name : ''"></span>
-                                        <span x-show="!r.leave_type" style="color:#bbb;font-size:12px;">—</span>
-                                    </td>
-                                </template>
-                                <td style="font-size:13px;" x-text="fmt(r.start_date)"></td>
-                                <td style="font-size:13px;" x-text="fmt(r.end_date)"></td>
-                                <td style="text-align:center;font-size:13px;font-weight:500;" x-text="r.days"></td>
-                                <td style="text-align:center;">
-                                    <span :style="'font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;' +
-                                        (r.status==='approved' ? 'background:#d1fae5;color:#065f46;' :
-                                         r.status==='rejected' ? 'background:#fee2e2;color:#991b1b;' :
-                                                                  'background:#fef3c7;color:#92400e;')"
-                                          x-text="r.status"></span>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </template>
+        @endif
     </div>
     @endif
 
@@ -464,50 +425,6 @@ function leavePage() {
                 d.setDate(d.getDate() + 1);
             }
             this.workingDays = count;
-        },
-    };
-}
-
-function allowancesTab() {
-    const allLeaves    = @json($leavesData);
-    const employees    = @json($employeesData);
-    const leaveTypesMeta = @json($leaveTypes->map(fn($lt) => ['id' => $lt->id, 'counts_toward_allowance' => $lt->counts_toward_allowance]));
-
-    return {
-        filterType: '',
-        filterEmp:  '',
-
-        get rows() {
-            return allLeaves
-                .filter(l => {
-                    const typeMatch = !this.filterType ||
-                        (l.leave_type && l.leave_type.id == this.filterType);
-                    const empMatch  = !this.filterEmp || l.employee.id == this.filterEmp;
-                    return typeMatch && empMatch;
-                })
-                .sort((a, b) => a.start_date.localeCompare(b.start_date));
-        },
-
-        get summary() {
-            if (!this.filterEmp || !this.filterType) return null;
-            const lt  = leaveTypesMeta.find(t => t.id == this.filterType);
-            if (!lt || !lt.counts_toward_allowance) return null;
-            const emp = employees.find(e => e.id == this.filterEmp);
-            if (!emp || !emp.has_allowance) return null;
-            const used = allLeaves
-                .filter(l => l.employee.id == this.filterEmp &&
-                             l.leave_type && l.leave_type.id == this.filterType &&
-                             l.status === 'approved')
-                .reduce((s, l) => s + parseFloat(l.days), 0);
-            return {
-                allowed:   emp.days_allowed,
-                used:      used,
-                remaining: Math.max(0, emp.days_allowed - used),
-            };
-        },
-
-        fmt(d) {
-            return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         },
     };
 }
