@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DailyCheckin;
+use App\Models\LeaveType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -14,16 +15,59 @@ class ReportsController extends Controller
     {
         if (!Auth::user()->isManager()) abort(403);
 
-        $employees = User::orderBy('name')->get();
-        $results   = null;
-        $summary   = null;
+        $employees  = User::orderBy('name')->get();
+        $leaveTypes = LeaveType::orderBy('name')->get();
+        $results    = null;
+        $summary    = null;
+        $leaveData  = null;
 
         $employeeId = $request->get('employee_id');
         $from       = $request->get('from');
         $to         = $request->get('to');
         $reportType = $request->get('report', 'late');
+        $year       = (int) $request->get('year', now()->year);
+        $years      = range(now()->year, max(now()->year - 4, 2020));
 
-        if ($from && $to) {
+        if ($reportType === 'leave_summary' && $request->has('report')) {
+            $leaveData = User::with(['leaveRequests' => fn($q) => $q
+                ->where('status', 'approved')
+                ->whereYear('start_date', $year)
+                ->with('leaveType')
+            ])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($emp) use ($leaveTypes) {
+                $byType = $leaveTypes->mapWithKeys(fn($lt) => [
+                    $lt->id => $emp->leaveRequests->where('leave_type_id', $lt->id)->sum('days'),
+                ]);
+
+                $annualUsed = $emp->leaveRequests
+                    ->filter(fn($lr) => is_null($lr->leave_type_id)
+                        || ($lr->leaveType && $lr->leaveType->counts_toward_allowance))
+                    ->sum('days');
+
+                $remaining = $emp->hasHolidayAllowance()
+                    ? max(0, $emp->days_allowed - $annualUsed)
+                    : PHP_INT_MAX;
+
+                return [
+                    'id'               => $emp->id,
+                    'name'             => $emp->name,
+                    'role_label'       => $emp->roleBadgeLabel(),
+                    'color'            => $emp->color,
+                    'initials'         => $emp->initials(),
+                    'photo'            => $emp->photoUrl(),
+                    'has_allowance'    => $emp->hasHolidayAllowance(),
+                    'days_allowed'     => $emp->days_allowed,
+                    'annual_used'      => $annualUsed,
+                    'annual_remaining' => $remaining,
+                    'by_type'          => $byType,
+                ];
+            })
+            ->sortBy('annual_remaining')
+            ->values();
+
+        } elseif ($from && $to) {
             $query = DailyCheckin::with('user')
                 ->whereBetween('date', [$from, $to])
                 ->whereNotNull('checked_in_at')
@@ -67,7 +111,10 @@ class ReportsController extends Controller
             }
         }
 
-        return view('reports.index', compact('employees', 'results', 'summary', 'employeeId', 'from', 'to', 'reportType'));
+        return view('reports.index', compact(
+            'employees', 'leaveTypes', 'results', 'summary', 'leaveData',
+            'employeeId', 'from', 'to', 'reportType', 'year', 'years'
+        ));
     }
 
     public function export(Request $request)
@@ -78,6 +125,52 @@ class ReportsController extends Controller
         $from       = $request->get('from');
         $to         = $request->get('to');
         $reportType = $request->get('report', 'late');
+
+        $year = (int) $request->get('year', now()->year);
+
+        if ($reportType === 'leave_summary') {
+            $leaveTypes = LeaveType::orderBy('name')->get();
+            $employees  = User::with(['leaveRequests' => fn($q) => $q
+                ->where('status', 'approved')
+                ->whereYear('start_date', $year)
+                ->with('leaveType')
+            ])->orderBy('name')->get();
+
+            $rows = $employees->map(function ($emp) use ($leaveTypes) {
+                $annualUsed = $emp->leaveRequests
+                    ->filter(fn($lr) => is_null($lr->leave_type_id)
+                        || ($lr->leaveType && $lr->leaveType->counts_toward_allowance))
+                    ->sum('days');
+
+                $row = [
+                    'Employee'         => $emp->name,
+                    'Role'             => $emp->roleBadgeLabel(),
+                    'Annual Allowed'   => $emp->hasHolidayAllowance() ? $emp->days_allowed : 'N/A',
+                    'Annual Used'      => $emp->hasHolidayAllowance() ? $annualUsed : 'N/A',
+                    'Annual Remaining' => $emp->hasHolidayAllowance()
+                        ? max(0, $emp->days_allowed - $annualUsed) : 'N/A',
+                ];
+
+                foreach ($leaveTypes as $lt) {
+                    $row[$lt->name] = $emp->leaveRequests->where('leave_type_id', $lt->id)->sum('days');
+                }
+
+                return $row;
+            });
+
+            $filename = 'leave-summary-' . $year . '.csv';
+            $headers  = [
+                'Content-Type'        => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            return response()->stream(function () use ($rows) {
+                $handle = fopen('php://output', 'w');
+                if ($rows->isNotEmpty()) fputcsv($handle, array_keys($rows->first()));
+                foreach ($rows as $row) fputcsv($handle, $row);
+                fclose($handle);
+            }, 200, $headers);
+        }
 
         if (!$from || !$to) abort(400);
 
