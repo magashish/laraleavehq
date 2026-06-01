@@ -98,8 +98,10 @@ class ReportsController extends Controller
             if ($reportType === 'late') {
                 $lateThreshold = '09:00:00';
 
-                $results = $checkins->filter(function ($c) use ($lateThreshold) {
-                    return $c->checked_in_at->format('H:i:s') > $lateThreshold;
+                $results = $checkins->filter(function ($c) {
+                    $minutesLate = (int) Carbon::parse($c->date->toDateString() . ' 09:00:00')
+                        ->diffInMinutes($c->checked_in_at);
+                    return $minutesLate >= 1;
                 })->map(function ($c) {
                     $minutesLate = (int) Carbon::parse($c->date->toDateString() . ' 09:00:00')
                         ->diffInMinutes($c->checked_in_at);
@@ -107,7 +109,7 @@ class ReportsController extends Controller
                         'employee'     => $c->user->name,
                         'date'         => $c->date->format('l, j M Y'),
                         'signed_in_at' => $c->checked_in_at->format('H:i'),
-                        'minutes_late' => max(1, $minutesLate),
+                        'minutes_late' => $minutesLate,
                     ];
                 })->values();
 
@@ -241,7 +243,10 @@ class ReportsController extends Controller
         $rows     = collect();
 
         if ($reportType === 'late') {
-            $rows = $checkins->filter(fn($c) => $c->checked_in_at->format('H:i:s') > '09:00:00')
+            $rows = $checkins->filter(function ($c) {
+                    return (int) Carbon::parse($c->date->toDateString() . ' 09:00:00')
+                        ->diffInMinutes($c->checked_in_at) >= 1;
+                })
                 ->map(function ($c) {
                     $minutesLate = (int) Carbon::parse($c->date->toDateString() . ' 09:00:00')
                         ->diffInMinutes($c->checked_in_at);
@@ -249,7 +254,7 @@ class ReportsController extends Controller
                         'Employee'     => $c->user->name,
                         'Date'         => $c->date->format('l, j M Y'),
                         'Signed In'    => $c->checked_in_at->format('H:i'),
-                        'Minutes Late' => max(1, $minutesLate),
+                        'Minutes Late' => $minutesLate,
                     ];
                 })->values();
         }
