@@ -28,10 +28,10 @@
             {{-- Employee (optional) — late arrivals --}}
             <div class="form-group" style="margin:0;min-width:180px;" x-show="report === 'late'">
                 <label class="form-label">Employee</label>
-                <select name="employee_id" class="form-select">
+                <select name="employee_id" class="form-select" :disabled="report !== 'late'">
                     <option value="">All employees</option>
                     @foreach($employees as $emp)
-                        <option value="{{ $emp->id }}" {{ $employeeId == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                        <option value="{{ $emp->id }}" {{ ($reportType === 'late' && $employeeId == $emp->id) ? 'selected' : '' }}>{{ $emp->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -61,10 +61,12 @@
             {{-- Employee (required) + Leave type — leave history --}}
             <div class="form-group" style="margin:0;min-width:180px;" x-show="report === 'leave_history'">
                 <label class="form-label">Employee <span style="color:#ef4444;">*</span></label>
-                <select name="employee_id" class="form-select" :required="report === 'leave_history'">
+                <select name="employee_id" class="form-select"
+                        :disabled="report !== 'leave_history'"
+                        :required="report === 'leave_history'">
                     <option value="">Select employee…</option>
                     @foreach($employees as $emp)
-                        <option value="{{ $emp->id }}" {{ $employeeId == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                        <option value="{{ $emp->id }}" {{ ($reportType === 'leave_history' && $employeeId == $emp->id) ? 'selected' : '' }}>{{ $emp->name }}</option>
                     @endforeach
                 </select>
             </div>
