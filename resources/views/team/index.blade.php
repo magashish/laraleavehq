@@ -541,8 +541,8 @@ function teamOverview() {
         isLeaveCell(s) { return s === 'leave' || s === 'sick' || s.startsWith('medical'); },
         cellLbl(cell) {
             if (cell.booked && !cell.is_medical && cell.loc) {
-                if (cell.s === 'wfh') return 'WFH';
                 if (cell.is_half_day) return '½';
+                if (cell.s === 'wfh') return 'WFH';
                 return '';
             }
             if (cell.booked && cell.loc) {
