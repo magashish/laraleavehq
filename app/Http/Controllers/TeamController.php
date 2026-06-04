@@ -93,6 +93,7 @@ class TeamController extends Controller
                 'location'    => $emp->work_location,
                 'status'      => ($todayFull = $this->getUserStatusFull($emp, $today, $publicHolidays, $wfhLeaveColor))['s'],
                 'statusColor' => $todayFull['c'],
+                'is_half_day' => $todayFull['is_half_day'] ?? false,
                 'signed_in'   => $signedIn,
                 'time'        => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
                 'week'        => array_map(fn($d) => $this->getUserStatusFull($emp, $d, $publicHolidays, $wfhLeaveColor), $weekDates),
