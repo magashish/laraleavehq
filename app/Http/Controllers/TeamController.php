@@ -293,9 +293,9 @@ class TeamController extends Controller
 
             $status = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
             $tip    = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
+            if ($leave->is_half_day) $tip .= ' (half day)';
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            // Use the leave type's configured color as the cell background
-            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => false];
+            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => false, 'is_half_day' => $leave->is_half_day];
         }
 
         $loc   = $emp->work_location ?? 'unknown';
