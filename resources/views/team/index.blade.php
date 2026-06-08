@@ -205,29 +205,29 @@
                 {{-- Week: day grid --}}
                 <template x-if="view==='week'">
                     <div>
-                        <div style="display:flex;align-items:center;gap:6px;padding:0 0 8px;border-bottom:1px solid #f0f0ee;margin-bottom:4px;">
-                            <div style="width:32px;flex-shrink:0;"></div>
-                            <div style="width:124px;flex-shrink:0;"></div>
+                        <div style="display:grid;grid-template-columns:32px 124px repeat(5,1fr);gap:6px;padding:0 0 8px;border-bottom:1px solid #f0f0ee;margin-bottom:4px;align-items:center;">
+                            <div></div>
+                            <div></div>
                             <template x-for="(day,i) in weekLabels" :key="i">
-                                <div style="font-size:10px;font-weight:500;text-align:center;width:32px;flex-shrink:0;"
-                                     :style="i===todayIdx ? 'color:#3a8ddd' : 'color:#aaa'" x-text="day"></div>
+                                <div style="font-size:10px;font-weight:500;text-align:center;"
+                                     :style="i===todayIdx ? 'color:#3a8ddd;font-weight:600;' : 'color:#aaa'" x-text="day"></div>
                             </template>
                         </div>
                         <template x-for="p in teamData" :key="p.id">
-                            <div style="display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #f0f0ee;">
+                            <div style="display:grid;grid-template-columns:32px 124px repeat(5,1fr);gap:6px;padding:8px 0;border-bottom:1px solid #f0f0ee;align-items:center;">
                                 <template x-if="p.photo_url">
-                                    <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                                    <img :src="p.photo_url" :alt="p.name" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
                                 </template>
                                 <template x-if="!p.photo_url">
-                                    <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
+                                    <div :style="'width:32px;height:32px;font-size:11px;font-weight:500;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:'+p.color+'33;color:'+p.color"
                                          x-text="p.initials"></div>
                                 </template>
-                                <div style="width:124px;flex-shrink:0;min-width:0;">
+                                <div style="min-width:0;">
                                     <div style="font-size:12px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" x-text="p.name"></div>
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <template x-for="(cell,di) in p.week" :key="di">
-                                    <div class="day-cell" :class="[cellBgCls(cell), di===todayIdx ? 'today-col' : '', cell.is_medical ? 'has-tip' : '']"
+                                    <div class="day-cell" style="width:auto;" :class="[cellBgCls(cell), di===todayIdx ? 'today-col' : '', cell.is_medical ? 'has-tip' : '']"
                                          :style="(cell.booked && !cell.is_medical && cell.c && cell.s !== 'wfh') ? 'background:'+cell.c+'55' : ''"
                                          @mouseenter="showCellTip($event, cell.tip || dayTitle(cell.s))"
                                          @mouseleave="hideCellTip()">
