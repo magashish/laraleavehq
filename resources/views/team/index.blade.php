@@ -183,9 +183,11 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <div class="prow-meta" style="display:contents;">
-                                <span :class="pillCls(p.status)"
-                                      :style="p.statusColor ? 'background:'+p.statusColor+'33;border-color:'+p.statusColor+'88' : ''"
-                                      x-text="statusLabel(p.status) + (p.is_half_day ? ' ½' : '')"></span>
+                                <span :class="(p.is_medical && p.statusLoc ? pillCls(p.statusLoc) : pillCls(p.status)) + (p.is_medical && p.statusTip ? ' has-tip' : '')"
+                                      :style="(!p.is_medical && p.statusColor) ? 'background:'+p.statusColor+'33;border-color:'+p.statusColor+'88' : ''"
+                                      @mouseenter="p.is_medical && p.statusTip ? showCellTip($event, p.statusTip) : null"
+                                      @mouseleave="p.is_medical ? hideCellTip() : null"
+                                      x-text="(p.is_medical && p.statusLoc ? statusLabel(p.statusLoc) : statusLabel(p.status)) + (p.is_half_day ? ' ½' : '')"></span>
                                 <div class="prow-time" style="width:90px;flex-shrink:0;display:flex;justify-content:center;">
                                     <span x-show="p.signed_in"
                                           style="font-size:10px;padding:2px 8px;border-radius:99px;background:#d8f5ec;color:#0d6648;font-weight:500;white-space:nowrap;">
