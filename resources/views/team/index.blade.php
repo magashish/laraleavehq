@@ -30,6 +30,7 @@
 .cell-tip { position:fixed; background:#1a1a1a; color:#fff; font-size:11px; padding:5px 9px; border-radius:6px; white-space:nowrap; pointer-events:none; z-index:9999; box-shadow:0 2px 8px rgba(0,0,0,.25); transform:translateX(-50%); }
 .fbtn { font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid #e0e0e0;background:#f5f5f3;color:#888;cursor:pointer; }
 .fbtn.on { background:#fff;color:#1a1a1a;border-color:#aaa;font-weight:500; }
+.status-box { min-width:46px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;white-space:nowrap;padding:0 8px; }
 .ov-card { background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:1rem 1.25rem; }
 .prow { display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ee; }
 .prow:last-child { border-bottom:none; }
@@ -183,8 +184,8 @@
                                     <div style="font-size:11px;color:#888;" x-text="p.role"></div>
                                 </div>
                                 <div class="prow-meta" style="display:contents;">
-                                <span :class="(p.is_medical && p.statusLoc ? pillCls(p.statusLoc) : pillCls(p.status)) + (p.is_medical && p.statusTip ? ' has-tip' : '')"
-                                      :style="(!p.is_medical && p.statusColor) ? 'background:'+p.statusColor+'33;border-color:'+p.statusColor+'88' : ''"
+                                <span :class="'status-box ' + (p.is_medical && p.statusLoc ? dayCellCls(p.statusLoc) + ' ' + dayLblCls(p.statusLoc) : dayCellCls(p.status) + ' ' + dayLblCls(p.status)) + (p.is_medical && p.statusTip ? ' has-tip' : '')"
+                                      :style="(!p.is_medical && p.statusColor) ? 'background:'+p.statusColor+'55' : ''"
                                       @mouseenter="p.is_medical && p.statusTip ? showCellTip($event, p.statusTip) : null"
                                       @mouseleave="p.is_medical ? hideCellTip() : null"
                                       x-text="(p.is_medical && p.statusLoc ? statusLabel(p.statusLoc) : statusLabel(p.status)) + (p.is_half_day ? ' ½' : '')"></span>
