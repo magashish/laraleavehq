@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/settings/employees/{user}', [SettingsController::class, 'updateEmployee'])->name('settings.employees.update');
     Route::delete('/settings/employees/{user}', [SettingsController::class, 'removeEmployee'])->name('settings.employees.remove');
     Route::patch('/settings/employees/{user}/days', [SettingsController::class, 'updateDays'])->name('settings.employees.days');
+    Route::patch('/settings/employees/{user}/password', [SettingsController::class, 'changePassword'])->name('settings.employees.password');
 
     // Bank holidays
     Route::post('/settings/bank-holidays', [SettingsController::class, 'addBankHoliday'])->name('settings.bank-holidays.add');

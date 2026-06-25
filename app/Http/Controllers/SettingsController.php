@@ -138,6 +138,20 @@ class SettingsController extends Controller
         return back()->with('success', "{$name} removed.");
     }
 
+    public function changePassword(Request $request, User $user)
+    {
+        $this->requireManager();
+
+        $validated = $request->validate([
+            'password'              => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required',
+        ]);
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+
+        return back()->with('success', "{$user->name}'s password has been updated.");
+    }
+
     public function updateDays(Request $request, User $user)
     {
         $this->requireManager();

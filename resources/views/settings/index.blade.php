@@ -18,6 +18,7 @@
     showDeptModal: false,
     showEditDeptModal: false,
     showCheckinModal: false,
+    showPwModal: false, pwEmp: {},
     empColor: '#38bdf8',
     editEmpColor: '#38bdf8',
     editEmp: {},
@@ -167,6 +168,31 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline" @click="showEditEmpModal = false">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    {{-- ── Change Password Modal ── --}}
+    <template x-if="showPwModal">
+        <div class="modal-overlay" @click.self="showPwModal = false">
+            <div class="modal">
+                <h3>Change Password</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">Set a new password for <strong x-text="pwEmp.name"></strong>.</p>
+                <form method="POST" :action="'/settings/employees/' + pwEmp.id + '/password'">
+                    @csrf @method('PATCH')
+                    <div class="form-group">
+                        <label class="form-label">New password <span style="color:#888;font-weight:400;">(min 8 characters)</span></label>
+                        <input type="password" name="password" class="form-input" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm new password</label>
+                        <input type="password" name="password_confirmation" class="form-input" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" @click="showPwModal = false">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update password</button>
                     </div>
                 </form>
             </div>
@@ -436,6 +462,10 @@
                                             work_location: '{{ $emp->work_location ?? 'office' }}'
                                         }; editEmpColor = '{{ $emp->color }}'; showEditEmpModal = true">
                                         <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                    <button class="icon-btn" title="Change password"
+                                        @click="pwEmp = { id: {{ $emp->id }}, name: '{{ addslashes($emp->name) }}' }; showPwModal = true">
+                                        <svg width="14" height="14" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                     </button>
                                     @if($emp->id !== Auth::id())
                                         <form method="POST" action="{{ route('settings.employees.remove', $emp) }}"
