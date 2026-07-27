@@ -303,7 +303,14 @@
                                 </template>
                             </td>
                             <td style="color:#555;font-size:12px;" x-text="l.reason || '—'"></td>
-                            <td><span class="badge" :class="'badge-' + l.status" x-text="l.status"></span></td>
+                            <td>
+                                <span class="badge" :class="'badge-' + l.status" x-text="l.status"></span>
+                                <template x-if="l.approved_by">
+                                    <div style="font-size:10px;color:#aaa;margin-top:3px;white-space:nowrap;">
+                                        by <span style="color:#888;" x-text="l.approved_by"></span>
+                                    </div>
+                                </template>
+                            </td>
                             <td style="padding-left:16px;">
                                 <div style="display:flex;gap:5px;align-items:center;">
                                     @if(Auth::user()->isManager())

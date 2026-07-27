@@ -20,7 +20,7 @@ class LeaveController extends Controller
     {
         $user = Auth::user();
 
-        $leaves = LeaveRequest::with(['employee', 'leaveType'])
+        $leaves = LeaveRequest::with(['employee', 'leaveType', 'approvedBy'])
             ->when(!$user->isManager(), fn($q) => $q->where('employee_id', $user->id))
             ->latest()
             ->get();
@@ -53,6 +53,8 @@ class LeaveController extends Controller
             'short_leave_part' => $l->short_leave_part,
             'reason'        => $l->reason,
             'status'        => $l->status,
+            'approved_by'   => $l->approvedBy ? $l->approvedBy->name : null,
+            'approved_at'   => $l->approved_at ? $l->approved_at->format('d M Y') : null,
             'leave_type' => $l->leaveType ? [
                 'id'    => $l->leaveType->id,
                 'name'  => $l->leaveType->name,
