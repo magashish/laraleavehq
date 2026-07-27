@@ -304,7 +304,7 @@
                             </td>
                             <td style="color:#555;font-size:12px;" x-text="l.reason || '—'"></td>
                             <td><span class="badge" :class="'badge-' + l.status" x-text="l.status"></span></td>
-                            <td>
+                            <td style="padding-left:16px;">
                                 <div style="display:flex;gap:5px;align-items:center;">
                                     @if(Auth::user()->isManager())
                                         <template x-if="l.status === 'pending'">
