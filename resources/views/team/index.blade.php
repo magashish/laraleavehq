@@ -188,7 +188,7 @@
                                       :style="(!p.is_medical && p.statusColor) ? 'background:'+p.statusColor+'55' : ''"
                                       @mouseenter="p.is_medical && p.statusTip ? showCellTip($event, p.statusTip) : null"
                                       @mouseleave="p.is_medical ? hideCellTip() : null"
-                                      x-text="(p.is_medical && p.statusLoc ? statusLabel(p.statusLoc) : statusLabel(p.status)) + (p.is_half_day ? ' ½' : '')"></span>
+                                      x-text="(p.is_medical && p.statusLoc ? statusLabel(p.statusLoc) : (p.statusTypeName && (p.status === 'leave' || p.status === 'sick') ? p.statusTypeName : statusLabel(p.status))) + (p.is_half_day ? ' ½' : '')"></span>
                                 <div class="prow-time" style="width:90px;flex-shrink:0;display:flex;justify-content:center;">
                                     <span x-show="p.signed_in"
                                           style="font-size:10px;padding:2px 8px;border-radius:99px;background:#d8f5ec;color:#0d6648;font-weight:500;white-space:nowrap;">

@@ -93,10 +93,11 @@ class TeamController extends Controller
                 'location'    => $emp->work_location,
                 'status'      => ($todayFull = $this->getUserStatusFull($emp, $today, $publicHolidays, $wfhLeaveColor))['s'],
                 'statusColor' => $todayFull['c'],
-                'statusTip'   => $todayFull['tip'],
-                'statusLoc'   => $todayFull['loc'],
-                'is_medical'  => $todayFull['is_medical'] ?? false,
-                'is_half_day' => $todayFull['is_half_day'] ?? false,
+                'statusTip'      => $todayFull['tip'],
+                'statusLoc'      => $todayFull['loc'],
+                'statusTypeName' => $todayFull['type_name'] ?? null,
+                'is_medical'     => $todayFull['is_medical'] ?? false,
+                'is_half_day'    => $todayFull['is_half_day'] ?? false,
                 'signed_in'   => $signedIn,
                 'time'        => $todayCheckin?->checked_in_at?->format('H:i') ?? '—',
                 'week'        => array_map(fn($d) => $this->getUserStatusFull($emp, $d, $publicHolidays, $wfhLeaveColor), $weekDates),
@@ -295,11 +296,12 @@ class TeamController extends Controller
                 return ['s' => 'medical', 'c' => null, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => true];
             }
 
-            $status = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
-            $tip    = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
+            $status    = $isSick ? 'sick' : ($isWfh ? 'wfh' : 'leave');
+            $typeName  = $leave->leaveType?->name ?? ($isSick ? 'Sick leave' : 'Leave');
+            $tip       = $typeName;
             if ($leave->is_half_day) $tip .= ' (half day)';
             if ($leave->reason) $tip .= ': ' . $leave->reason;
-            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'booked' => true, 'loc' => $empLoc, 'is_medical' => false, 'is_half_day' => $leave->is_half_day];
+            return ['s' => $status, 'c' => $color, 'tip' => $tip, 'type_name' => $typeName, 'booked' => true, 'loc' => $empLoc, 'is_medical' => false, 'is_half_day' => $leave->is_half_day];
         }
 
         $loc   = $emp->work_location ?? 'unknown';
